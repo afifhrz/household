@@ -1,0 +1,58 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/student/courseregistration/" method="post">{% csrf_token %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Course Registration Form</h6>
+                    <div class="row mb-3">
+                        <label for="inputNameStudent" class="col-sm-3 col-form-label">Student Name</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" id="inputNameStudent" name="inputNameStudent" required=True>
+                                {% for option in data_std %}
+                                    <option value={{option.id}}>{{option.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="inputNameCourse" class="col-sm-3 col-form-label">Course Name</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" id="inputNameCourse" name="inputNameCourse" required=True>
+                                {% for option in data_prd %}
+                                    <option value={{option.id}}>{{option.description}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="inputEmail" class="col-sm-3 col-form-label">Student Email</label>
+                        <div class="col-sm-9">
+                            <input type="email" class="form-control" id="inputEmail" name="inputEmail">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="inputPhone" class="col-sm-3 col-form-label">Student Phone</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="inputPhone" required=True placeholder="Start with '62'" name="inputPhone">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="inputAmount" class="col-sm-3 col-form-label">Amount Charge</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" id="inputAmount" name="inputAmount" step=25000 placeholder="Charge Per Hour" required=True>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+<script>
+</script>
+{% endblock content %}

@@ -1,0 +1,42 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/student/completedcourse/" method="post">{% csrf_token %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Completed Course Form</h6>
+                    <div class="row mb-3">
+                        <label for="inputNameStudent" class="col-sm-3 col-form-label">Student Name</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" id="inputNameStudent" name="inputNameStudent" required=True>
+                                {% for option in data_std %}
+                                    <option value={{option.id}}>{{option.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="inputDate" class="col-sm-3 col-form-label">Date Course</label>
+                        <div class="col-sm-9">
+                            <input type="datetime-local" class="form-control" id="inputDate" name="inputDate" required=True>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="inputAmountHour" class="col-sm-3 col-form-label">Amount Hour</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" id="inputAmountHour" name="inputAmountHour" step=0.25 placeholder="Hour Unit" required=True>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+<script>
+</script>
+{% endblock content %}
