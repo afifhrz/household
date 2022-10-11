@@ -6,6 +6,7 @@ from product.models import prd_mst
 # Create your models here.
 class std_mst(models.Model):
     name = models.CharField(max_length=30, db_column="NAME")
+    gender = models.CharField(max_length=1, db_column="GENDER", default="M")
     phone = models.CharField(max_length=30, db_column="BOOKED_PHONE")
     email = models.CharField(max_length=30, db_column="EMAIL")
     address = models.CharField(max_length=30, blank=True, null=True, db_column="ADDRESS")

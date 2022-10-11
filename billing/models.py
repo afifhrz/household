@@ -1,7 +1,7 @@
 import datetime
 from django.db import models
 from django.utils import timezone
-from student.models import std_trx
+from student.models import std_trx, std_trx_course
 
 # Create your models here.
 class bll_mst_bill_item(models.Model):
@@ -15,6 +15,8 @@ class bll_mst_bill_item(models.Model):
         db_table = 'BLL_MST_BILL_ITEM'
 
 class bll_trx_billing(models.Model):
+    # set to expired inv 0, paid = 1, proforma = 8
+    invoice_status = models.IntegerField(db_column="INVOICE_STATUS", default=0)
     invoice_date = models.DateField(default=datetime.date.today, db_column="INVOICE_DATE")
     total_amount = models.DecimalField(db_column="TOTAL_AMOUNT", decimal_places=2, max_digits=12) 
     remarks = models.CharField(max_length=30, db_column="REMARKS")
@@ -43,5 +45,6 @@ class bll_trx_bill_item(models.Model):
     btb_id = models.ForeignKey(bll_trx_billing, on_delete=models.RESTRICT, db_column="BLL_TRX_BILLING_ID")
     bll_mst_id = models.ForeignKey(bll_mst_bill_item, on_delete=models.RESTRICT, db_column="BLL_MST_BILL_ITEM_ID")
     std_trx_id = models.ForeignKey(std_trx, on_delete=models.RESTRICT, db_column="STD_TRX_ID")
+    std_trx_course_id = models.ForeignKey(std_trx_course, on_delete=models.RESTRICT, db_column="STD_TRX_COURSE_ID")
     class Meta:
         db_table = 'BLL_TRX_BILL_ITEM'

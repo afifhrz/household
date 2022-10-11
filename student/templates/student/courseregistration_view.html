@@ -43,13 +43,38 @@
                     <div class="row mb-3">
                         <label for="inputAmount" class="col-sm-3 col-form-label">Amount Charge</label>
                         <div class="col-sm-9">
-                            <input type="number" class="form-control" id="inputAmount" name="inputAmount" step=25000 placeholder="Charge Per Hour" required=True>
+                            <input type="number" class="form-control" id="inputAmount" name="inputAmount" step=5000 placeholder="Charge Per Hour" required=True>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
             </div>
         </div>
         </form>
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">List Trx Student</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Amount per Hour</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_trx %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.NAME}}</td>
+                            <td>Rp. {{data.amount}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 

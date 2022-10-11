@@ -22,6 +22,7 @@ urlpatterns = [
     path('billing/', include('billing.urls')),
     path('product/', include('dashboard.urls')),
     path('student/', include('student.urls')),
+    path('account/', include('account.urls')),
 ]
 
 # handler404 = 'dashboard.views.error_404_view'

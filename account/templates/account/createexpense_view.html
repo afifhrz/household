@@ -1,0 +1,93 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/account/createexpense/" method="post">{% csrf_token %}
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Generate Expense</h6>
+                        <div class="row mb-3">
+                            <label for="inputNameBilling" class="col-sm-3 col-form-label">Billing Name</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputNameBilling" name="inputNameBilling" required=True>
+                                    {% for option in databill %}
+                                        <option value={{option.id}}>{{option.item_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputCategory" class="col-sm-3 col-form-label">Category</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputCategory" name="inputCategory" required=True>
+                                        <option value="Balance">Balance</option>
+                                        <option value="Transfer">Transfer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputAmount" class="col-sm-3 col-form-label">Amount</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputAmount" name="inputAmount" required=True>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputType" class="col-sm-3 col-form-label">Account Type</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputType" name="inputType" required=True>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Bank Permata">Bank Permata</option>
+                                        <option value="Bank BRI">Bank BRI</option>
+                                        <option value="Bank Sinarmas">Bank Sinarmas</option>
+                                        <option value="Spay Zeni">Spay Zeni</option>
+                                        <option value="Spay Hariz">Spay Hariz</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Expense List</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Amount In</th>
+                            <th scope="col">Amount Out</th>
+                            <th scope="col">Overall Balance</th>
+                            <th scope="col">Account Type</th>
+                            <th scope="col">Account Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in dataexpense %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.description}}</td>
+                            <td>{{data.category}}</td>
+                            <td>{{data.amount_in}}</td>
+                            <td>{{data.amount_out}}</td>
+                            <td>{{data.overall_balance}}</td>
+                            <td>{{data.account_type}}</td>
+                            <td>{{data.account_date}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+{% endblock script %}

@@ -15,6 +15,15 @@
                         </div>
                     </div>
                     <div class="row mb-3">
+                        <label for="inputGender" class="col-sm-3 col-form-label">Gender</label>
+                        <div class="col-sm-9">
+                            <select class="form-select" name="inputGender" id="inputGender">
+                                <option value="F">Female</option>
+                                <option value="M">Male</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
                         <label for="inputEmail" class="col-sm-3 col-form-label">Email</label>
                         <div class="col-sm-9">
                             <input type="email" class="form-control" id="inputEmail" required=True name="inputEmail">
@@ -47,6 +56,41 @@
             </div>
         </div>
         </form>
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">List Master Student</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Booked Phone</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Date Created</th>
+                            <th scope="col">Gender</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in datamst %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.name}}</td>
+                            <td>{{data.phone}}</td>
+                            <td>{{data.email}}</td>
+                            <td>{{data.date_created}}</td>
+                            <td>{% if data.gender == 'M' %}
+                                    Laki Laki
+                                {% else %}
+                                    Perempuan
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

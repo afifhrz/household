@@ -1,0 +1,116 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Unpaid Bill</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Invoice Date</th>
+                            <th scope="col">Month</th>
+                            <th scope="col">Year</th>
+                            <th scope="col">To Be Paid</th>
+                            <th scope="col">Phone Number</th>
+                            <th scope="col">Message</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in dataunpaid %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.NAME}}</td>
+                            <td>{{data.invoice_date}}</td>
+                            <td>{{data.month}}</td>
+                            <td>{{data.year}}</td>
+                            <td>{{data.tobe_paid}}</td>
+                            <td>{{data.BOOKED_PHONE}}</td>
+                            <td>
+                                <input type="button" id="buttonSend{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-primary open-Send{{data.id}}" style="height:25px; width:50px; font-size:10px">Send</button>
+                            </td>
+                            <td>
+                                <input type="button" id="buttonPaid{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-primary open-Paid{{data.id}}" style="height:25px; width:50px; font-size:10px">Paid</button>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Paid Bill</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Invoice Date</th>
+                            <th scope="col">Month</th>
+                            <th scope="col">Year</th>
+                            <th scope="col">Total Amount</th>
+                            <th scope="col">Phone Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in datapaid %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.NAME}}</td>
+                            <td>{{data.invoice_date}}</td>
+                            <td>{{data.month}}</td>
+                            <td>{{data.year}}</td>
+                            <td>{{data.total_amount}}</td>
+                            <td>{{data.BOOKED_PHONE}}</td>
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+{% for data in dataunpaid %}
+    <script>
+        $(document).on("click", ".open-Send{{data.id}}", function () {
+            var $ids =  $('#buttonSend{{data.id}}').val();
+            //console.log($ids);
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/billing/send_invoice/"+$ids,
+                success: function(data){
+                    window.open(data);
+                }
+            });
+        
+        });
+    </script>
+    <script>
+        $(document).on("click", ".open-Paid{{data.id}}", function () {
+            var $ids =  $('#buttonPaid{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/billing/paid_invoice/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+{% endfor %}
+{% endblock script %}
