@@ -40,7 +40,8 @@ def createexpense_view(request):
             )
         
         return HttpResponseRedirect(reverse('createexpense'))
-    dataexpense = acc_income_expense.objects.all()
+    date= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-01"
+    dataexpense = acc_income_expense.objects.filter(account_date__gte=date).order_by('-pk')
     data_bill = bll_mst_bill_item.objects.filter(validstatus=1)
     context = {
         'title':'H - Expense',

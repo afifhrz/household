@@ -128,3 +128,23 @@ def paid_invoice(request, id):
         account_type='Cash')
     data_bill.update(invoice_status=1, tobe_paid=0)
     return HttpResponse(None)
+
+@csrf_protect
+def createmstbill_view(request):
+    if request.method=="POST":
+        # dosomething
+        member = bll_mst_bill_item(
+            item_name=request.POST['inputItemName'],
+            debet_credit=request.POST['inputDebet'],
+        )
+        member.save()
+        return HttpResponseRedirect(reverse('createmstbill'))
+
+    datamst = bll_mst_bill_item.objects.filter(validstatus=1)
+    context = {
+        'title':'H - Master Billing',
+        'dashboard_active':'Billing',
+        'datamst':datamst
+        }
+
+    return render(request, 'billing/createmstbill_view.html', context)

@@ -1,0 +1,65 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/billing/createmstbill/" method="post">{% csrf_token %}
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Master Billing</h6>
+                        <div class="row mb-3">
+                            <label for="inputItemName" class="col-sm-3 col-form-label">Billing Item Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="inputItemName" name="inputItemName" required=True>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputDebet" class="col-sm-3 col-form-label">Debet/Credit</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputDebet" name="inputDebet" required=True>
+                                    <option value="0">Debet</option>
+                                    <option value="1">Credit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Billing Item List</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Item Name</th>
+                            <th scope="col">Type Account</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in datamst %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.item_name}}</td>
+                            <td>
+                                {% if data.debet_credit == 0 %}
+                                    Debet
+                                {% else %}
+                                    Credit
+                                {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+{% endblock script %}

@@ -82,7 +82,8 @@ def completedcourse_view(request):
     data_trx = std_trx_course.objects.raw('''SELECT stc.ID, sm.NAME, stc.DATETIME, stc.AMOUNT_HOUR FROM STD_TRX_COURSE stc
 	left join STD_TRX st on stc.STD_TRX_ID = st.id
 	left join STD_MST sm on st.STD_MST_ID =sm.ID
-	WHERE stc.VALID_UNTIL ISNULL''')
+	WHERE stc.VALID_UNTIL ISNULL
+    ORDER BY DATETIME DESC''')
 
     context = {
         'title':'H - Completed Course',
