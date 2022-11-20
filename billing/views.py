@@ -82,7 +82,6 @@ def liststatusbill_view(request):
     return render(request, 'billing/liststatusbill_view.html', context)
 
 def send_invoice(request, id):
-    print(id)
     data = std_trx_course.objects.raw(f"""SELECT stc.ID, SUM(stc .AMOUNT_HOUR) as TOTAL_HOUR, st.AMOUNT as AMOUNT_PERHOUR, sm.NAME, sm.GENDER, sm.BOOKED_PHONE, SUM(stc .AMOUNT_HOUR)*st.AMOUNT as TOTAL_AMOUNT
 FROM STD_TRX_COURSE stc 
 	JOIN STD_TRX st ON stc.STD_TRX_ID = st.ID
@@ -97,10 +96,14 @@ FROM STD_TRX_COURSE stc
     name = data[0].NAME.split(" ")[0]
     phone_number = data[0].BOOKED_PHONE
 
-    if data[0].GENDER == "M":
-        gender = "Pak/Mas"
-    else:
-        gender = "Bu/Mbak"
+    if data[0].GENDER == "mr":
+        gender = "Pak"
+    elif data[0].GENDER == "mrs":
+        gender = "Bu"
+    elif data[0].GENDER == "bro":
+        gender = "Mas"
+    elif data[0].GENDER == "sist":
+        gender = "Mbak"
 
     message = f"""Selamat Pagi {gender} {name}, mohon maaf mengganggu waktunya.
 
@@ -119,13 +122,16 @@ Terimakasih"""
 
 def paid_invoice(request, id):
     data_bill = bll_trx_billing.objects.filter(id=id)
+    data_bill_item = bll_trx_bill_item.objects.filter(btb_id=data_bill[0])
+    # print(data_bill_item.values()[0][""])
+    data_mst = bll_mst_bill_item.objects.filter(id=data_bill_item[0].bll_mst_id_id)
     data_last_acc = acc_income_expense.objects.latest('id')
     acc_income_expense.objects.create(
-        description='Biaya Kursus', 
-        category='Transfer', 
+        description=data_mst[0].item_name,  
         amount_in=data_bill[0].tobe_paid, 
         overall_balance=data_last_acc.overall_balance+data_bill[0].tobe_paid,
-        account_type='Cash')
+        account_type='Cash',
+        bll_mst_item_id=data_mst[0])
     data_bill.update(invoice_status=1, tobe_paid=0)
     return HttpResponse(None)
 

@@ -9,8 +9,8 @@
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
                             <i class="fa fa-chart-line fa-3x text-primary"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Today Sale</p>
-                                <h6 class="mb-0">$1234</h6>
+                                <p class="mb-2">Month Sale</p>
+                                <h6 class="mb-0">Rp. {{data.month_sale.MONTH_SALE}}</h6>
                             </div>
                         </div>
                     </div>
@@ -18,26 +18,32 @@
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
                             <i class="fa fa-chart-bar fa-3x text-primary"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Total Sale</p>
-                                <h6 class="mb-0">$1234</h6>
+                                <p class="mb-2">Profit Investment</p>
+                                <h6 class="mb-0" style="text-align:right">Rp. {{data.profit_investment|floatformat:"0"}}</h6>
+                                <h6 class="mb-0" style="text-align:right;
+                                {% if data.profit_percentage < 0 %}
+                                    color:#FF0000
+                                {% else %}
+                                    color:#00FF00
+                                {% endif %}">{{data.profit_percentage|floatformat:"0"}}%</h6>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                            <i class="fa fa-chart-area fa-3x text-primary"></i>
+                            <i class="fa fa-chart-area fa-3x text-danger"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Today Revenue</p>
-                                <h6 class="mb-0">$1234</h6>
+                                <p class="mb-2">Month<br>Expense</p>
+                                <h6 class="mb-0">Rp. {{data.month_expense.MONTH_EXPENSE}}</h6>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                            <i class="fa fa-chart-pie fa-3x text-primary"></i>
+                            <i class="fa fa-money-bill-alt fa-3x text-warning"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Total Revenue</p>
-                                <h6 class="mb-0">$1234</h6>
+                                <p class="mb-2">Total Balance</p>
+                                <h6 class="mb-0">Rp. {{ data.overall_balance.overall_balance|floatformat:"0" }}</h6>
                             </div>
                         </div>
                     </div>
@@ -49,31 +55,130 @@
             <!-- Sales Chart Start -->
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4">
-                    <div class="col-sm-12 col-xl-6">
+                    <div class="col-xl-12 col-xl-6">
                         <div class="bg-light text-center rounded p-4">
                             <div class="d-flex align-items-center justify-content-between mb-4">
-                                <h6 class="mb-0">Worldwide Sales</h6>
+                                <h6 class="mb-0">Expense</h6>
                                 <a href="">Show All</a>
                             </div>
-                            <canvas id="worldwide-sales"></canvas>
+                            <canvas id="expense"></canvas>
                         </div>
                     </div>
-                    <div class="col-sm-12 col-xl-6">
+                </div>
+            </div>
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-xl-12 col-xl-6">
                         <div class="bg-light text-center rounded p-4">
                             <div class="d-flex align-items-center justify-content-between mb-4">
-                                <h6 class="mb-0">Salse & Revenue</h6>
+                                <h6 class="mb-0">Sales & Revenue</h6>
                                 <a href="">Show All</a>
                             </div>
-                            <canvas id="salse-revenue"></canvas>
+                            <canvas id="sales-revenue"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- Sales Chart End -->
-
+            
+            {% comment %} Liabilities, Debt and Short Investment {% endcomment %}
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-hand-holding-usd fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Acc-Receivable</p>
+                                <h6 class="mb-0">Rp. {{ar_data.ar|floatformat:"0"}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-donate fa-3x text-danger"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Liabilites Fund</p>
+                                <h6 class="mb-0">Rp. {{ar_data.liabilities|floatformat:"0"}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-first-aid fa-3x text-danger"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Emergency Fund</p>
+                                <h6 class="mb-0">Rp. {{ar_data.emergency_fund|floatformat:"0"}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-file-invoice-dollar fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">For Invest</p>
+                                <h6 class="mb-0">Rp. {{ ar_data.short|floatformat:"0" }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% comment %} Total Asset {% endcomment %}
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-dollar-sign fa-3x text-warning"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Total Asset</p>
+                                <h6 class="mb-0">Rp. {{asset.total_asset|floatformat:"0"}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-box fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Gold</p>
+                                <h6 class="mb-0">Rp. {{asset.gold_inv|floatformat:"0"}}</h6>
+                                <h6 class="mb-0" style="text-align:right;
+                                {% if asset.gold_percentage < 0 %}
+                                    color:#FF0000
+                                {% else %}
+                                    color:#00FF00
+                                {% endif %}">{{asset.gold_percentage|floatformat:"2"}}%</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-sort-amount-up fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Stock Investment</p>
+                                <h6 class="mb-0">Rp. {{asset.stock_inv|floatformat:"0"}}</h6>
+                                <h6 class="mb-0" style="text-align:right;
+                                {% if asset.stock_percentage < 0 %}
+                                    color:#FF0000
+                                {% else %}
+                                    color:#00FF00
+                                {% endif %}">{{asset.stock_percentage|floatformat:"2"}}%</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-funnel-dollar fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Fund Investment</p>
+                                <h6 class="mb-0">Rp. {{asset.fund_inv.total_fund|floatformat:"0"}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Recent Sales Start -->
-            <div class="container-fluid pt-4 px-4">
+            {% comment %} <div class="container-fluid pt-4 px-4">
                 <div class="bg-light text-center rounded p-4">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <h6 class="mb-0">Recent Salse</h6>
@@ -142,12 +247,12 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
             <!-- Recent Sales End -->
 
 
             <!-- Widgets Start -->
-            <div class="container-fluid pt-4 px-4">
+            {% comment %} <div class="container-fluid pt-4 px-4">
                 <div class="row g-4">
                     <div class="col-sm-12 col-md-6 col-xl-4">
                         <div class="h-100 bg-light rounded p-4">
@@ -264,7 +369,199 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
             <!-- Widgets End -->
 
 {% endblock content %}
+
+{% block script %}
+<script>
+(function ($) {
+    "use strict";
+    
+    // Back to top button
+    $(window).scroll(function () {
+        if ($(this).scrollTop() > 300) {
+            $('.back-to-top').fadeIn('slow');
+        } else {
+            $('.back-to-top').fadeOut('slow');
+        }
+    });
+    $('.back-to-top').click(function () {
+        $('html, body').animate({scrollTop: 0}, 1500, 'easeInOutExpo');
+        return false;
+    });
+
+
+    // Progress Bar
+    $('.pg-bar').waypoint(function () {
+        $('.progress .progress-bar').each(function () {
+            $(this).css("width", $(this).attr("aria-valuenow") + '%');
+        });
+    }, {offset: '80%'});
+
+
+    // Calender
+    $('#calender').datetimepicker({
+        inline: true,
+        format: 'L'
+    });
+
+
+    // Testimonials carousel
+    $(".testimonial-carousel").owlCarousel({
+        autoplay: true,
+        smartSpeed: 1000,
+        items: 1,
+        dots: true,
+        loop: true,
+        nav : false
+    });
+
+
+    // Worldwide Sales Chart
+    var ctx1 = $("#expense").get(0).getContext("2d");
+    var myChart1 = new Chart(ctx1, {
+        type: "bar",
+        data: {
+            labels: [{% for data in expense.label %}
+            {{'"'}}{{data.0}}{{'",'}}
+            {% endfor %}],
+            datasets: [ {% for item in expense.data %}
+                {{"{"}}
+                    {{"label: "}}{{'"'}}{{item.0.0}}{{'",'}}
+                    {{"data: "}}{{item.1}}{{','}}
+                    backgroundColor: "rgba({{item.2.0}}, {{item.2.1}}, {{item.2.2}}, .{{forloop.counter|add:'5'}})"
+                {{"},"}}
+            {% endfor %}]
+            },
+        options: {
+            responsive: true
+        }
+    });
+
+
+    // Salse & Revenue Chart
+    var ctx2 = $("#sales-revenue").get(0).getContext("2d");
+    var myChart2 = new Chart(ctx2, {
+        type: "line",
+        data: {
+            labels: [ {% for data in sales  %}
+            {{'"'}}{{data.month_year}}{{'",'}}
+            {% endfor %} ],
+            datasets: [{
+                    label: "Net Profit",
+                    data: [ {% for data in sales %}
+                        {{data.NET_PROFIT}}{{','}}
+                    {% endfor %} ],
+                    backgroundColor: "rgba(0, 156, 255, .5)",
+                    fill: true
+                },
+                {
+                    label: "Revenue",
+                    data: [{% for data in sales %}
+                    {{data.REVENUE}}{{','}}
+                {% endfor %}],
+                    backgroundColor: "rgba(0, 156, 255, .3)",
+                    fill: true
+                }
+            ]
+            },
+        options: {
+            responsive: true
+        }
+    });
+    
+
+
+    // Single Line Chart
+    var ctx3 = $("#line-chart").get(0).getContext("2d");
+    var myChart3 = new Chart(ctx3, {
+        type: "line",
+        data: {
+            labels: [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150],
+            datasets: [{
+                label: "Salse",
+                fill: false,
+                backgroundColor: "rgba(0, 156, 255, .3)",
+                data: [7, 8, 8, 9, 9, 9, 10, 11, 14, 14, 15]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+
+    // Single Bar Chart
+    var ctx4 = $("#bar-chart").get(0).getContext("2d");
+    var myChart4 = new Chart(ctx4, {
+        type: "bar",
+        data: {
+            labels: ["Italy", "France", "Spain", "USA", "Argentina"],
+            datasets: [{
+                backgroundColor: [
+                    "rgba(0, 156, 255, .7)",
+                    "rgba(0, 156, 255, .6)",
+                    "rgba(0, 156, 255, .5)",
+                    "rgba(0, 156, 255, .4)",
+                    "rgba(0, 156, 255, .3)"
+                ],
+                data: [55, 49, 44, 24, 15]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+
+    // Pie Chart
+    var ctx5 = $("#pie-chart").get(0).getContext("2d");
+    var myChart5 = new Chart(ctx5, {
+        type: "pie",
+        data: {
+            labels: ["Italy", "France", "Spain", "USA", "Argentina"],
+            datasets: [{
+                backgroundColor: [
+                    "rgba(0, 156, 255, .7)",
+                    "rgba(0, 156, 255, .6)",
+                    "rgba(0, 156, 255, .5)",
+                    "rgba(0, 156, 255, .4)",
+                    "rgba(0, 156, 255, .3)"
+                ],
+                data: [55, 49, 44, 24, 15]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+
+    // Doughnut Chart
+    var ctx6 = $("#doughnut-chart").get(0).getContext("2d");
+    var myChart6 = new Chart(ctx6, {
+        type: "doughnut",
+        data: {
+            labels: ["Italy", "France", "Spain", "USA", "Argentina"],
+            datasets: [{
+                backgroundColor: [
+                    "rgba(0, 156, 255, .7)",
+                    "rgba(0, 156, 255, .6)",
+                    "rgba(0, 156, 255, .5)",
+                    "rgba(0, 156, 255, .4)",
+                    "rgba(0, 156, 255, .3)"
+                ],
+                data: [55, 49, 44, 24, 15]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    
+})(jQuery);
+</script>
+{% endblock script %}

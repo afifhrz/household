@@ -18,8 +18,10 @@
                         <label for="inputGender" class="col-sm-3 col-form-label">Gender</label>
                         <div class="col-sm-9">
                             <select class="form-select" name="inputGender" id="inputGender">
-                                <option value="F">Female</option>
-                                <option value="M">Male</option>
+                                <option value="mr">Mr</option>
+                                <option value="mrs">Mrs</option>
+                                <option value="bro">Bro</option>
+                                <option value="sist">Sister</option>
                             </select>
                         </div>
                     </div>
@@ -79,9 +81,13 @@
                             <td>{{data.phone}}</td>
                             <td>{{data.email}}</td>
                             <td>{{data.date_created}}</td>
-                            <td>{% if data.gender == 'M' %}
+                            <td>{% if data.gender == 'mr' %}
                                     Laki Laki
-                                {% else %}
+                                {% elif data.gender == 'mrs' %}
+                                    Perempuan
+                                {% elif data.gender == 'bro' %}
+                                    Laki Laki
+                                {% elif data.gender == 'sist' %}
                                     Perempuan
                                 {% endif %}
                             </td>

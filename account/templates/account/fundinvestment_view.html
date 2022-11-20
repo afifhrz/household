@@ -1,0 +1,104 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/account/fundinvestment/" method="post">{% csrf_token %}
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Input Fund</h6>
+                        <div class="row mb-3">
+                            <label for="inputNameFund" class="col-sm-3 col-form-label">Fund Name</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputNameFund" name="inputNameFund" required=True>
+                                    {% for fundname in datafund %}
+                                        <option value="{{fundname.0.fund_code}}">{{fundname.0.fund_code}}</option>   
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputUnit" class="col-sm-3 col-form-label">Unit</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputUnit" name="inputUnit" step=0.0001 required=True>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputAverageNav" class="col-sm-3 col-form-label">Avg Nav Price</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputAverageNav" name="inputAverageNav" step=0.001 required=True>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputCurrentNav" class="col-sm-3 col-form-label">Current Nav Price</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputCurrentNav" name="inputCurrentNav" step=0.001 required=True>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Fund List</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Fund Name</th>
+                            <th scope="col">Average Nav</th>
+                            <th scope="col">Current Nav</th>
+                            <th scope="col">Unit</th>
+                            <th scope="col">M. Value</th>
+                            <th scope="col">POTG/L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in datafund %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.0.fund_code}}</td>
+                            <td>{{data.0.average_nav}}</td>
+                            <td>{{data.0.current_nav}}</td>
+                            <td>{{data.0.unit}}</td>
+                            <td>{{data.1}}</td>
+                            <td>{{data.2}}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <th scope="row">4</th>
+                            <td>Sucorinvest Sharia Money Market Fund</td>
+                            <td></td>
+                            <td></td>
+                            <td>{{datareksa_ibu.0}}</td>
+                            <td>{{datareksa_ibu.1}}</td>
+                            <td>{{datareksa_ibu.2}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+    $(document).ready( function() {
+        var now = new Date();
+        var month = (now.getMonth() + 1);               
+        var day = now.getDate();
+        if (month < 10) 
+            month = "0" + month;
+        if (day < 10) 
+            day = "0" + day;
+        var today = now.getFullYear() + '-' + month + '-' + day;
+        $('#inputDate').val(today);
+    });
+</script>
+{% endblock script %}
