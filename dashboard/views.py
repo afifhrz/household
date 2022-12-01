@@ -30,7 +30,7 @@ def index(request):
     category = list(cursor.execute("""select DISTINCT case
 		when BLL_MST_BILL_ITEM_ID in (1,6) then 'INCOME'
 		when BLL_MST_BILL_ITEM_ID in (3,18) then 'OPS-INCOME'
-		when BLL_MST_BILL_ITEM_ID in (2,7,8,9,11) then 'MONTHLY-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (2,7,8,9,11,17) then 'MONTHLY-EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY FUND'
 		when BLL_MST_BILL_ITEM_ID in (5,12,13) then 'SECONDARY NEED'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
@@ -43,7 +43,7 @@ def index(request):
 	case
 		when BLL_MST_BILL_ITEM_ID in (1,6) then 'INCOME'
 		when BLL_MST_BILL_ITEM_ID in (3,18) then 'OPS-INCOME'
-		when BLL_MST_BILL_ITEM_ID in (2,7,8,9,11) then 'MONTHLY-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (2,7,8,9,11,17) then 'MONTHLY-EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY FUND'
 		when BLL_MST_BILL_ITEM_ID in (5,12,13) then 'SECONDARY NEED'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'

@@ -71,6 +71,7 @@
                             <th scope="col">Email</th>
                             <th scope="col">Date Created</th>
                             <th scope="col">Gender</th>
+                            <th scope="col">Termination</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,10 +92,46 @@
                                     Perempuan
                                 {% endif %}
                             </td>
+                            <td>
+                                <input type="button" id="buttonTerminate{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-warning open-Terminate{{data.id}}" style="height:25px; width:75px; font-size:10px">Terminate</button>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detail">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="container-fluid pt-4 px-4"> 
+                <div class="row g-4">
+                    <div class="col-sm-12 col-xl-12">
+                        <div class="bg-light rounded h-100 p-4">
+                            <h6 class="mb-4">Student Termination Form</h6>
+                            <form action="/student/studenttermination/" method="post">{% csrf_token %}
+                                <div class="row mb-3">
+                                    <input type="number" name="inputIdTerminate" id="inputIdTerminate" hidden>
+                                    <label for="inputReason" class="col-sm-6 col-form-label">Reason Terminate</label>
+                                    <div class="col-sm-9 col-xl-12">
+                                        <input type="text" class="form-control" id="inputReason" required=True name="inputReason">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 text-end">
+                                        <button type="submit" class="btn btn-danger ml-2">Terminate</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid pt-4 px-4">
             </div>
         </div>
     </div>
@@ -115,3 +152,24 @@
   }
 </script>
 {% endblock content %}
+
+{% block script %}
+
+{% for data in datamst %}
+    <script>
+        $(document).on("click", ".open-Terminate{{data.id}}", function () {
+            var $ids =  $('#buttonTerminate{{data.id}}').val();
+            $("#detail").modal('show');
+            $("#detail").find('input[name="inputIdTerminate"]').val($ids);
+            {% comment %} $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/student/terminate/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            }); {% endcomment %}
+        });
+    </script>
+{% endfor %}
+
+{% endblock script %}
