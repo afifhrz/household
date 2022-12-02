@@ -19,6 +19,7 @@
                             <th scope="col">Phone Number</th>
                             <th scope="col">Message</th>
                             <th scope="col">Action</th>
+                            <th scope="col">Cancel</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,7 +38,11 @@
                             </td>
                             <td>
                                 <input type="button" id="buttonPaid{{data.id}}" value={{data.id}} hidden>
-                                <button type="button" class="btn btn-primary open-Paid{{data.id}}" style="height:25px; width:50px; font-size:10px">Paid</button>
+                                <button type="button" class="btn btn-warning open-Paid{{data.id}}" style="height:25px; width:50px; font-size:10px">Paid</button>
+                            </td>
+                            <td>
+                                <input type="button" id="buttonCancel{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-danger open-Cancel{{data.id}}" style="height:25px; width:60px; font-size:10px">Cancel</button>
                             </td>
                         </tr>
 
@@ -106,6 +111,18 @@
             $.ajax({
                 type: "GET",
                 url: "http://{{ request.get_host }}/billing/paid_invoice/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).on("click", ".open-Cancel{{data.id}}", function () {
+            var $ids =  $('#buttonPaid{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/billing/cancel_invoice/"+$ids,
                 success:function(data){
                     window.location.reload();
                 }

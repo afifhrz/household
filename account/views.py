@@ -3,8 +3,9 @@ from django.urls import reverse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from datetime import datetime
-from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_investment_deposit
-from billing.models import bll_mst_bill_item
+import calendar
+from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_investment_deposit, acc_ar_debt
+from billing.models import bll_mst_bill_item, bll_trx_bill_item
 import urllib
 import requests
 import json
@@ -190,3 +191,42 @@ def depoinvestment_view(request):
         'datadepo':datadepo,
         }
     return render(request, 'account/depoinvestment_view.html', context)
+
+def arliability_view(request):
+    
+    year = datetime.today().year
+    month = datetime.today().month-1
+    date = str(year)+"-"+str(month)+"-"+"01"
+    total_day = calendar.monthrange(year, month)[1]
+    
+    data_ar = acc_ar_debt.objects.filter(account_type='AR', account_status='UNPAID', valid_status='VALID')
+    data_li = acc_ar_debt.objects.filter(account_type='LIABILITY', account_status='UNPAID', valid_status='VALID')
+    data_paid = acc_ar_debt.objects.filter(account_status='PAID', valid_status='VALID')
+
+    context = {
+        'title':'H - Account Receivable & Liability',
+        'dashboard_active':'Account',
+        'dataar':data_ar,
+        'datali':data_li,
+        'data_paid':data_paid
+        }
+    return render(request, 'account/arliability_view.html', context)
+
+def arliability_paid(request, id):
+    data_debt = acc_ar_debt.objects.filter(id=id).values()
+    data_mst = bll_mst_bill_item.objects.filter(id=data_debt[0]['bll_mst_item_id_id'])
+    data_last_acc = acc_income_expense.objects.latest('id')
+    acc_income_expense.objects.create(
+        description=data_mst[0].item_name,  
+        amount_out=float(data_debt[0]['amount']), 
+        overall_balance=data_last_acc.overall_balance-data_debt[0]['amount'],
+        account_type='Cash',
+        account_date=datetime.today(),
+        bll_mst_item_id=data_mst[0])
+    data_debt.update(account_status="PAID")
+    return HttpResponse(None)
+
+def cancel_ar(request, id):
+    data_bill = acc_ar_debt.objects.filter(id=id)
+    data_bill.update(valid_status='INVALID')
+    return HttpResponse(None)

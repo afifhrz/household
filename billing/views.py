@@ -3,6 +3,8 @@ from django.urls import reverse
 import urllib.parse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
+
+import calendar
 from datetime import datetime
 from account.models import acc_income_expense
 from student.models import std_mst, std_trx, std_trx_course
@@ -53,7 +55,9 @@ def generatebillcourse_view(request):
 
         return HttpResponseRedirect(reverse('generatebillcourse'))
 
-    datastd = std_mst.objects.raw('SELECT * FROM STD_MST sm where id in (SELECT STD_MST_ID from STD_TRX st where VALID_UNTIL ISNULL)')
+    datastd = std_mst.objects.raw('''SELECT * FROM STD_MST where ID in (SELECT st.STD_MST_ID FROM STD_TRX st
+	JOIN STD_MST sm ON sm.ID = st.STD_MST_ID 
+	WHERE sm.VALID_UNTIL ISNULL)''')
 
     context = {
         'title':'H - Invoice Generator',
@@ -64,15 +68,22 @@ def generatebillcourse_view(request):
     return render(request, 'billing/generatebillcourse_view.html', context)
 
 def liststatusbill_view(request):
+    
+    year = datetime.today().year
+    month = datetime.today().month-1
+    date = str(year)+"-"+str(month)+"-"+"01"
+    total_day = calendar.monthrange(year, month)[1]
+    enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
+    
     data_unpaid_bill = bll_trx_billing.objects.raw("""SELECT btb.ID, btb.INVOICE_DATE, btb.TOBE_PAID, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
 	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
 	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
 	WHERE INVOICE_STATUS = 8
     ORDER BY TOBE_PAID DESC""")
-    data_paid_bill = bll_trx_billing.objects.raw("""SELECT btb.ID, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
+    data_paid_bill = bll_trx_billing.objects.raw(f"""SELECT btb.ID, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
 	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
 	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
-	WHERE INVOICE_STATUS = 1""")
+	WHERE INVOICE_STATUS = 1 AND INVOICE_DATE >= '{date}'""")
     context = {
         'title':'H - Status Bill',
         'dashboard_active':'Billing',
@@ -131,8 +142,14 @@ def paid_invoice(request, id):
         amount_in=data_bill[0].tobe_paid, 
         overall_balance=data_last_acc.overall_balance+data_bill[0].tobe_paid,
         account_type='Cash',
+        account_date=data_bill[0].invoice_date,
         bll_mst_item_id=data_mst[0])
     data_bill.update(invoice_status=1, tobe_paid=0)
+    return HttpResponse(None)
+
+def cancel_invoice(request, id):
+    data_bill = bll_trx_billing.objects.filter(id=id)
+    data_bill.update(invoice_status=0)
     return HttpResponse(None)
 
 @csrf_protect

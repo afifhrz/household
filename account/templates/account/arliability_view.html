@@ -1,0 +1,175 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        {% if dataar %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Unpaid Account Receivable</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Account Date</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Paid</th>
+                            <th scope="col">Cancel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in dataar %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.description}}</td>
+                            <td>{{data.account_date}}</td>
+                            <td>{{data.amount}}</td>
+                            <td>
+                                <input type="button" id="buttonPaid{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-warning open-Paid{{data.id}}" style="height:25px; width:50px; font-size:10px">Paid</button>
+                            </td>
+                            <td>
+                                <input type="button" id="buttonCancel{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-danger open-Cancel{{data.id}}" style="height:25px; width:60px; font-size:10px">Cancel</button>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        {% endif %}
+
+        {% if datali %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Unpaid Liability</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Account Date</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Paid</th>
+                            <th scope="col">Cancel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in datali %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.description}}</td>
+                            <td>{{data.account_date}}</td>
+                            <td>{{data.amount}}</td>
+                            <td>
+                                <input type="button" id="buttonPaid{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-warning open-Paid{{data.id}}" style="height:25px; width:50px; font-size:10px">Paid</button>
+                            </td>
+                            <td>
+                                <input type="button" id="buttonCancel{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-danger open-Cancel{{data.id}}" style="height:25px; width:60px; font-size:10px">Cancel</button>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        {% endif %}
+
+        {% if data_paid %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Paid</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Account Date</th>
+                            <th scope="col">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_paid %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.description}}</td>
+                            <td>{{data.account_date}}</td>
+                            <td>{{data.amount}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+{% for data in dataar %}
+    <script>
+        $(document).on("click", ".open-Paid{{data.id}}", function () {
+            var $ids =  $('#buttonPaid{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/account/arliability_paid/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).on("click", ".open-Cancel{{data.id}}", function () {
+            var $ids =  $('#buttonPaid{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/account/cancel_ar/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+{% endfor %}
+
+{% for data in datali %}
+    <script>
+        $(document).on("click", ".open-Paid{{data.id}}", function () {
+            var $ids =  $('#buttonPaid{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/account/arliability_paid/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).on("click", ".open-Cancel{{data.id}}", function () {
+            var $ids =  $('#buttonPaid{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/account/cancel_ar/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+{% endfor %}
+
+{% endblock script %}

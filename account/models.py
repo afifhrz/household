@@ -20,9 +20,10 @@ class acc_ar_debt(models.Model):
     account_date = models.DateTimeField(default=datetime.now(), db_column="ACCOUNT_DATE")
     description = models.CharField(max_length=30, db_column="DESCRIPTION") 
     amount = models.DecimalField(db_column="AMOUNT", blank=True, null=True, decimal_places=2, max_digits=20)
-    account_status = models.IntegerField(db_column="ACCOUNT_STATUS")
+    account_status = models.CharField(max_length=30, db_column="ACCOUNT_STATUS")
     account_type = models.CharField(max_length=30, db_column="ACCOUNT_TYPE")
     bll_mst_item_id = models.ForeignKey(bll_mst_bill_item, on_delete=models.RESTRICT, db_column="BLL_MST_BILL_ITEM_ID", default=1)
+    valid_status = models.CharField(max_length=30, db_column="VALID_STATUS")
 
     class Meta:
         db_table = 'ACC_AR_DEBT'

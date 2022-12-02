@@ -131,9 +131,16 @@ def index(request):
     url = "https://data-asg.goldprice.org/dbXRates/IDR"
     req = urllib.request.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7')
-    response = urllib.request.urlopen(req)
-    res = response.read()      # a `bytes` object
-    html = json.loads(res)
+    
+    try:    
+        response = urllib.request.urlopen(req)
+        res = response.read()      # a `bytes` object
+        html = json.loads(res)
+    except UnicodeDecodeError:
+        response = urllib.request.urlopen(req)
+        res = response.read()      # a `bytes` object
+        html = json.loads(res)
+    
     gold_price = html['items'][0]['xauPrice']    
     asset['gold_inv'] = round(gold_price/31.06778927*5,2)
 
