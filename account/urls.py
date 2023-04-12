@@ -10,4 +10,5 @@ urlpatterns = [
     path('arliability/', views.arliability_view, name='arliability'),
     path('arliability_paid/'+'<int:id>/', views.arliability_paid, name='arliability_paid'),
     path('cancel_ar/'+'<int:id>/', views.cancel_ar, name='cancel_ar'),
+    path('updateprice/', views.updateprice, name='updateprice'),
 ]

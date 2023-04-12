@@ -31,7 +31,8 @@ def createexpense_view(request):
                 overall_balance=datalatest.overall_balance+amount_in,
                 account_type=request.POST['inputType'],
                 account_date=request.POST['inputDate'],
-                bll_mst_item_id=data_bill[0]
+                bll_mst_item_id=data_bill[0],
+                remarks=request.POST['inputRemarks']
             )
         else:
             amount_out = int(request.POST['inputAmount'])
@@ -43,12 +44,13 @@ def createexpense_view(request):
                 overall_balance=datalatest.overall_balance-amount_out,
                 account_type=request.POST['inputType'],
                 account_date=request.POST['inputDate'],
-                bll_mst_item_id=data_bill[0]
+                bll_mst_item_id=data_bill[0],
+                remarks=request.POST['inputRemarks']
             )
         
         return HttpResponseRedirect(reverse('createexpense'))
     date= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-01"
-    dataexpense = acc_income_expense.objects.filter(account_date__gte=date).order_by('-pk')
+    dataexpense = acc_income_expense.objects.filter(account_date__gte=date).order_by('-account_date')
     data_bill = bll_mst_bill_item.objects.filter(validstatus=1)
     context = {
         'title':'H - Expense',
@@ -86,35 +88,43 @@ def stockinvestment_view(request):
     fut_val = []
     pbv = []
     porto = []
+    wbiv = []
+    bi_rate = 0.035
+    selisih_tp = []
+    g_l = []
     
     for data in datastock:
-        
-        #current price
-        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{data.stock_code}.JK'
-
-        req = urllib.request.Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7')
-        response = urllib.request.urlopen(req)
-        res = response.read()      # a `bytes` object
-        html = res.decode('utf-8') # a `str`; this step can't be used if data is binary
-        html = json.loads(html)
-        current_price.append(html['chart']['result'][0]['meta']['regularMarketPrice'])
-        
+        temp_cp = data.last_price
+        current_price.append(temp_cp)
         #growth rate
         temp_gr = (float(data.bv_annual) / float(data.bv_5)) ** (1 / (6 - 1)) - 1
         growth_rate.append(round(temp_gr*100,2))
         
         #fv
-        fut_val.append(round((npf.fv(temp_gr,5,0,-1*float(data.bv_annual))+(float(data.dividend)*5)),2))
+        temp_fv = round((npf.fv(temp_gr,5,0,-1*float(data.bv_annual))+(float(data.dividend)*5)),2)
+        fut_val.append(temp_fv)
         
         #pbv
-        pbv.append(round((1-(float(data.bv_annual)-html['chart']['result'][0]['meta']['previousClose'])/float(data.bv_annual)),2))
+        pbv.append(round((1-(float(data.bv_annual)-temp_cp)/float(data.bv_annual)),2))
         
         #myporto 
-        res_porto = '{:20,.2f}'.format((html['chart']['result'][0]['meta']['previousClose']*data.lot*100))
+        res_porto = '{:20,.2f}'.format((temp_cp*data.lot*100))
         porto.append(res_porto)
-    
-    datastock = zip(datastock, current_price, growth_rate, fut_val, pbv, porto)
+        
+        # wbiv / targetprice
+        temp_wbiv = -1*npf.pv(bi_rate, 5,0,temp_fv)
+        wbiv.append(round(temp_wbiv,2))
+        
+        # selisih tp dan cp
+        if data.average > temp_wbiv:
+            selisih_tp.append((temp_cp - float(data.average))/float(data.average)*100)
+        else:
+            selisih_tp.append((temp_cp - temp_wbiv)/temp_wbiv*100)
+            
+        # g/l
+        g_l.append('{:20,.2f}'.format(round((temp_cp-float(data.average))*data.lot*100,2)))
+        
+    datastock = zip(datastock, current_price, growth_rate, fut_val, pbv, porto, wbiv, selisih_tp,g_l)
     
     # data_bill = bll_mst_bill_item.objects.filter(validstatus=1)
     context = {
@@ -124,6 +134,25 @@ def stockinvestment_view(request):
         # 'databill':data_bill
         }
     return render(request, 'account/stockinvestment_view.html', context)
+
+@csrf_protect
+def updateprice(request):
+    datastock = acc_investment_stock.objects.all()
+    for data in datastock:        
+        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{data.stock_code}.JK'
+        req = urllib.request.Request(url)
+        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7')
+        response = urllib.request.urlopen(req)
+        res = response.read()      # a `bytes` object
+        html = res.decode('utf-8') # a `str`; this step can't be used if data is binary
+        html = json.loads(html)
+        temp_cp = html['chart']['result'][0]['meta']['regularMarketPrice']
+        data.last_price = temp_cp
+        data.last_price_date = datetime.now()
+        data.date_modified = data.date_modified
+        data.save()
+        
+    return HttpResponse("Ok")
 
 @csrf_protect
 def fundinvestment_view(request):

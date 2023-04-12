@@ -26,32 +26,18 @@
                                 <input type="number" class="form-control" id="inputAverage" name="inputAverage" step=0.001 required=True>
                             </div>
                         </div>
-                        {% comment %} <div class="row mb-3">
-                            <label for="inputType" class="col-sm-3 col-form-label">Source Account</label>
-                            <div class="col-sm-9">
-                                <select class="form-select" id="inputType" name="inputType" required=True>
-                                        <option value="Bank Permata">Bank Permata</option>
-                                        <option value="Bank BRI">Bank BRI</option>
-                                        <option value="Bank Sinarmas">Bank Sinarmas</option>                                    
-                                </select>
-                            </div>
-                        </div> {% endcomment %}
-                        {% comment %} <div class="row mb-3">
-                            <label for="inputDate" class="col-sm-3 col-form-label">Account Date</label>
-                            <div class="col-sm-9">
-                                <input type="date" class="form-control" id="inputDate" name="inputDate">
-                            </div>
-                        </div> {% endcomment %}
-
                         <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </div>
         </form>
         
         <div class="col-sm-12 col-xl-12">
-            <div class="bg-light rounded h-100 p-4">
-                <h6 class="mb-4">Stock List</h6>
-                <table class="table table-hover">
+            <div class="bg-light rounded h-100 p-4 overflow-scroll">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="">Stock List</h6>
+                    <button class="btn btn-warning update-price">Update Price</button>
+                </div>
+                <table class="table table-hover" id="table_price">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
@@ -67,14 +53,22 @@
                             <th scope="col">PBV</th>
                             <th scope="col">Lot</th>
                             <th scope="col">My Portfolio</th>
+                            <th scope="col">Target Price</th>
+                            <th scope="col">G/L</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for data in datastock %}
+                        {% if data.7 > -7 %}
+                        <tr style="background-color:#ee9f27">
+                        {% elif data.0.average < data.0.last_price %}
+                        <tr style="background-color:#7FFF00">
+                        {% else %}
                         <tr>
+                        {% endif %}
                             <th scope="row">{{forloop.counter}}</th>
                             <td>{{data.0.stock_code}}</td>
-                            <td>{{data.1}}</td>
+                            <td>{{data.0.last_price}}</td>
                             <td>{{data.0.average}}</td>
                             <td>{{data.0.der_annual}}</td>
                             <td>{{data.0.bv_5}}</td>
@@ -84,8 +78,9 @@
                             <td>{{data.3}}</td>
                             <td>{{data.4}}</td>
                             <td>{{data.0.lot}}</td>
-                            <td style="text-align:right">Rp. {{data.5}}</td>
-
+                            <td style="text-align:right; min-width: 150px;">Rp. {{data.5}}</td>
+                            <td>{{data.6}}</td>
+                            <td style="text-align:right; min-width: 150px;">Rp. {{data.8}}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -109,6 +104,22 @@
             day = "0" + day;
         var today = now.getFullYear() + '-' + month + '-' + day;
         $('#inputDate').val(today);
+    });
+    $('.update-price').click(function() {
+        $.ajax({
+            type: "POST",
+            url: "/account/updateprice/",
+            data:{
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            beforeSend: function() {
+                $('#table_price').html('Loading...');
+            },
+            success: function(data) {
+                window.location='/account/stockinvestment/';
+            }
+        });
+        return false;
     });
 </script>
 {% endblock script %}

@@ -71,7 +71,10 @@ def liststatusbill_view(request):
     
     year = datetime.today().year
     month = datetime.today().month-1
-    date = str(year)+"-"+str(month)+"-"+"01"
+    if len(str(month))==1:
+        date = str(year)+"-0"+str(month)+"-"+"01"
+    else:
+        date = str(year)+"-"+str(month)+"-"+"01"
     total_day = calendar.monthrange(year, month)[1]
     enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
     
@@ -81,6 +84,10 @@ def liststatusbill_view(request):
 	WHERE INVOICE_STATUS = 8
     ORDER BY TOBE_PAID DESC""")
     data_paid_bill = bll_trx_billing.objects.raw(f"""SELECT btb.ID, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
+	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
+	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
+	WHERE INVOICE_STATUS = 1 AND INVOICE_DATE >= '{date}'""")
+    print(f"""SELECT btb.ID, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
 	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
 	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
 	WHERE INVOICE_STATUS = 1 AND INVOICE_DATE >= '{date}'""")

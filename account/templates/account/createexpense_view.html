@@ -40,7 +40,13 @@
                                         {% comment %} <option value="Cash">Cash</option> {% endcomment %}
                                         <option value="Bank Permata">Bank Permata</option>
                                         <option value="Bank BRI">Bank BRI</option>
-                                        <option value="Bank Sinarmas">Bank Sinarmas</option>                                    
+                                        <option value="Bank Sinarmas">Bank Sinarmas</option>
+                                        <option value="Cash">Cashout</option>
+                                        <option value="OVO">OVO</option>
+                                        <option value="Shoope Pay">Shoope Pay</option>
+                                        <option value="Gopay">Gopay</option>
+                                        <option value="E-Money">E-Money</option>
+                                        <option value="Brizzi">Brizzi</option>                                                                        
                                 </select>
                             </div>
                         </div>
@@ -48,6 +54,12 @@
                             <label for="inputDate" class="col-sm-3 col-form-label">Account Date</label>
                             <div class="col-sm-9">
                                 <input type="date" class="form-control" id="inputDate" name="inputDate">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputRemarks" class="col-sm-3 col-form-label">Remarks</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="inputRemarks" name="inputRemarks">
                             </div>
                         </div>
 
@@ -70,6 +82,7 @@
                             <th scope="col">Overall Balance</th>
                             <th scope="col">Account Type</th>
                             <th scope="col">Account Date</th>
+                            <th scope="col">Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,6 +96,7 @@
                             <td>{{data.overall_balance}}</td>
                             <td>{{data.account_type}}</td>
                             <td>{{data.account_date}}</td>
+                            <td>{{data.remarks}}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

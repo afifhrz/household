@@ -464,6 +464,22 @@
                 {% endfor %}],
                     backgroundColor: "rgba(0, 156, 255, .3)",
                     fill: true
+                },
+                {
+                    label: "Expense",
+                    data: [{% for data in sales %}
+                    {{data.EXPENSE}}{{','}}
+                {% endfor %}],
+                    backgroundColor: "rgba(200, 0, 0, 1)",
+                    fill: false
+                },
+                {
+                    label: "Average Expense",
+                    data: [{% for data in data_avg_expense %}
+                    {{data}}{{','}}
+                {% endfor %}],
+                    backgroundColor: "rgba(100, 0, 0, 1)",
+                    fill: false
                 }
             ]
             },

@@ -14,48 +14,57 @@ def index(request):
     data = {}
     year = datetime.datetime.today().year
     month = datetime.datetime.today().month
-    date = str(year)+"-"+str(month)+"-"+"01"
     total_day = calendar.monthrange(year, month)[1]
-    enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
+    if len(str(month)) < 2:
+        date = str(year)+"-"+'0'+str(month)+"-"+"01"
+        enddate = str(year)+"-"+'0'+str(month)+"-"+ str(total_day)
+    else:
+        date = str(year)+"-"+str(month)+"-"+"01"
+        enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
+    
     
     # data balance
     data['month_sale']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_IN) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID = 1 AND ACCOUNT_DATE >= "{date}"''')[0]
     data['profit_investment']=0
-    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,3,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
+    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_OUT-AMOUNT_IN)+1900000 MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
     data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT ID, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
 
     # data expense chart
     
     cursor = connection.cursor()
     category = list(cursor.execute("""select DISTINCT case
-		when BLL_MST_BILL_ITEM_ID in (1,6) then 'INCOME'
-		when BLL_MST_BILL_ITEM_ID in (3,18) then 'OPS-INCOME'
-		when BLL_MST_BILL_ITEM_ID in (2,7,8,9,11,17) then 'MONTHLY-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY FUND'
-		when BLL_MST_BILL_ITEM_ID in (5,12,13) then 'SECONDARY NEED'
+		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (2, 17) then 'MONTHLY-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
+		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
+		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		else 'UNDEFINED'
+		when BLL_MST_BILL_ITEM_ID in (14) then 'INVESTMENT'
 	end as category from ACC_INC_EXP aie"""))
+    category = category[1:]
     
     data_chart = []
     for row in category:
         data_chart.append(list(cursor.execute(f"""select
 	case
-		when BLL_MST_BILL_ITEM_ID in (1,6) then 'INCOME'
-		when BLL_MST_BILL_ITEM_ID in (3,18) then 'OPS-INCOME'
-		when BLL_MST_BILL_ITEM_ID in (2,7,8,9,11,17) then 'MONTHLY-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY FUND'
-		when BLL_MST_BILL_ITEM_ID in (5,12,13) then 'SECONDARY NEED'
+		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (2, 17) then 'MONTHLY-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
+		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
+		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		else 'UNDEFINED'
+		when BLL_MST_BILL_ITEM_ID in (14) then 'INVESTMENT'
 	end as category,
 	IFNULL(SUM(AMOUNT_IN),0) + IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
        strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' 
        from ACC_INC_EXP
     where category = '{row[0]}'
-    group by strftime("%m-%Y", ACCOUNT_DATE), category ;""")))   
+    group by strftime("%m-%Y", ACCOUNT_DATE), category
+    order by ACCOUNT_DATE;""")))   
         
-    date = list(cursor.execute("""select DISTINCT strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' from ACC_INC_EXP"""))
+    date = list(cursor.execute("""select DISTINCT strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' from ACC_INC_EXP order by ACCOUNT_DATE"""))
     
     final_data = []
     for cat in data_chart:
@@ -94,7 +103,17 @@ def index(request):
 	IFNULL(SUM(AMOUNT_OUT),0) EXPENSE,
 	IFNULL((SUM(AMOUNT_IN) - SUM(AMOUNT_OUT)),0) as NET_PROFIT,
        strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' 
-       from ACC_INC_EXP group by strftime("%m-%Y", ACCOUNT_DATE);""")
+       from ACC_INC_EXP group by strftime("%m-%Y", ACCOUNT_DATE)
+       order by ACCOUNT_DATE;""")
+    
+    data_average_expense = []
+    sum_data = 0
+    for data_amount_out in sales_chart:
+        sum_data += data_amount_out.EXPENSE
+    avg = sum_data//len(sales_chart)
+    for data_amount_out in sales_chart:
+        data_average_expense.append(avg)
+    
 
     # liabilities, ar, short_inv
     ar_data = {}
@@ -112,16 +131,7 @@ def index(request):
     total_price = 0
     avg_price = 0
     for item in datastock:
-        #current price
-        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{item.stock_code}.JK'
-
-        req = urllib.request.Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7')
-        response = urllib.request.urlopen(req)
-        res = response.read()      # a `bytes` object
-        html = res.decode('utf-8') # a `str`; this step can't be used if data is binary
-        html = json.loads(html)
-        total_price += html['chart']['result'][0]['meta']['regularMarketPrice']*item.lot*100
+        total_price += item.last_price*item.lot*100
         avg_price += item.lot*item.average*100
     asset['stock_inv'] = total_price
     asset['stock_percentage'] = (asset['stock_inv']-float(avg_price))/float(avg_price)*100
@@ -158,15 +168,7 @@ def index(request):
         'ar_data':ar_data,
         'asset':asset,
         'sales':sales_chart,
-        'expense':expense_chart
+        'expense':expense_chart,
+        'data_avg_expense':data_average_expense
     }
     return render(request, 'dashboard/index.html', context)
-
-# from django.conf import settings
-# from django.shortcuts import redirect
- 
-# def error_404_view(request, exception):
-#     context = {}
-#     # we add the path to the the 404.html file
-#     # here. The name of our HTML file is 404.html
-#     return render(request, '404.html', context)
