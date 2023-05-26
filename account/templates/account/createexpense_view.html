@@ -18,15 +18,18 @@
                                 </select>
                             </div>
                         </div>
-                        {% comment %} <div class="row mb-3">
-                            <label for="inputCategory" class="col-sm-3 col-form-label">Category</label>
+                        <div class="row mb-3" id="startDateForm" style="display:none">
+                            <label for="inputStartDateContract" class="col-sm-3 col-form-label">Start Date Contract</label>
                             <div class="col-sm-9">
-                                <select class="form-select" id="inputCategory" name="inputCategory" required=True>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Transfer">Transfer</option>
-                                </select>
+                                <input type="date" class="form-control" id="inputStartDateContract" name="inputStartDateContract">
                             </div>
-                        </div> {% endcomment %}
+                        </div>
+                        <div class="row mb-3" id="periodContract" style="display:none">
+                            <label for="periodContract" class="col-sm-3 col-form-label">Periode Contract (in Year)</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="periodContract" name="periodContract">
+                            </div>
+                        </div>
                         <div class="row mb-3">
                             <label for="inputAmount" class="col-sm-3 col-form-label">Amount</label>
                             <div class="col-sm-9">
@@ -41,6 +44,7 @@
                                         <option value="Bank Permata">Bank Permata</option>
                                         <option value="Bank BRI">Bank BRI</option>
                                         <option value="Bank Sinarmas">Bank Sinarmas</option>
+                                        <option value="Laundry Balance">Laundry Balance</option>
                                         <option value="Cash">Cashout</option>
                                         <option value="OVO">OVO</option>
                                         <option value="Shoope Pay">Shoope Pay</option>
@@ -76,7 +80,6 @@
                         <tr>
                             <th scope="col">#</th>
                             <th scope="col">Description</th>
-                            <th scope="col">Category</th>
                             <th scope="col">Amount In</th>
                             <th scope="col">Amount Out</th>
                             <th scope="col">Overall Balance</th>
@@ -90,7 +93,6 @@
                         <tr>
                             <th scope="row">{{forloop.counter}}</th>
                             <td>{{data.description}}</td>
-                            <td>{{data.category}}</td>
                             <td>{{data.amount_in}}</td>
                             <td>{{data.amount_out}}</td>
                             <td>{{data.overall_balance}}</td>
@@ -110,6 +112,17 @@
 
 {% block script %}
 <script>
+    $('#inputNameBilling').on("click", function() {
+        var dropdown = $('#inputNameBilling').find(":selected").val();
+        if (dropdown=="16"){
+            $('#startDateForm').delay(500).slideDown('slow');
+            $('#periodContract').delay(500).slideDown('slow');
+        } else {
+            $('#startDateForm').delay(500).slideUp('slow');
+            $('#periodContract').delay(500).slideUp('slow');
+        }
+    })
+
     $(document).ready( function() {
         var now = new Date();
         var month = (now.getMonth() + 1);               
@@ -120,6 +133,7 @@
             day = "0" + day;
         var today = now.getFullYear() + '-' + month + '-' + day;
         $('#inputDate').val(today);
+        $('#inputStartDateContract').val(today);
     });
 </script>
 {% endblock script %}

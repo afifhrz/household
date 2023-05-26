@@ -122,8 +122,17 @@ FROM STD_TRX_COURSE stc
         gender = "Mas"
     elif data[0].GENDER == "sist":
         gender = "Mbak"
+    
+    if datetime.now().hour < 9:
+        suasana = "Pagi"
+    elif datetime.now().hour >= 9 and datetime.now().hour < 15:    
+        suasana = "Siang"
+    elif datetime.now().hour >= 15 and datetime.now().hour < 18:    
+        suasana = "Sore"
+    elif datetime.now().hour >= 18:    
+        suasana = "Malam"
 
-    message = f"""Selamat Pagi {gender} {name}, mohon maaf mengganggu waktunya.
+    message = f"""Selamat {suasana} {gender} {name}, mohon maaf mengganggu waktunya.
 
 Izin menginfokan lesnya total {total_hour} jam ya {gender}
 Totalnya Rp. {amount_perhour} * {total_hour} = Rp. {total_amount}
@@ -171,10 +180,12 @@ def createmstbill_view(request):
         return HttpResponseRedirect(reverse('createmstbill'))
 
     datamst = bll_mst_bill_item.objects.filter(validstatus=1)
+    datainvalid = bll_mst_bill_item.objects.filter(validstatus=0)
     context = {
         'title':'H - Master Billing',
         'dashboard_active':'Billing',
-        'datamst':datamst
+        'datamst':datamst,
+        'datainvalid':datainvalid
         }
 
     return render(request, 'billing/createmstbill_view.html', context)

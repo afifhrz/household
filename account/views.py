@@ -10,6 +10,7 @@ import urllib
 import requests
 import json
 import numpy_financial as npf
+from dateutil.relativedelta import relativedelta
 
 # Create your views here.
 @csrf_protect
@@ -25,7 +26,6 @@ def createexpense_view(request):
             amount_in = int(request.POST['inputAmount'])
             acc_income_expense.objects.create(
                 description=data_bill[0].item_name,
-                # category=request.POST['inputCategory'],
                 amount_in=amount_in,
                 amount_out=amount_out,
                 overall_balance=datalatest.overall_balance+amount_in,
@@ -35,22 +35,67 @@ def createexpense_view(request):
                 remarks=request.POST['inputRemarks']
             )
         else:
-            amount_out = int(request.POST['inputAmount'])
-            acc_income_expense.objects.create(
-                description=data_bill[0].item_name,
-                # category=request.POST['inputCategory'],
-                amount_in=amount_in,
-                amount_out=amount_out,
-                overall_balance=datalatest.overall_balance-amount_out,
-                account_type=request.POST['inputType'],
-                account_date=request.POST['inputDate'],
-                bll_mst_item_id=data_bill[0],
-                remarks=request.POST['inputRemarks']
-            )
+            if request.POST['inputNameBilling'] == "16":
+                dateContract = request.POST['inputStartDateContract']
+                date_time_obj = datetime.strptime(dateContract, '%Y-%m-%d')
+                month_length = int(request.POST['periodContract'])*12
+                amountPaid = int(request.POST['inputAmount'])/month_length
+                overall_balance_latest = float(datalatest.overall_balance)
+                for i in range(month_length):
+                    overall_balance_latest = overall_balance_latest - amountPaid
+                    acc_income_expense.objects.create(
+                        description=data_bill[0].item_name,
+                        amount_in=amount_in,
+                        amount_out=amountPaid,
+                        overall_balance=overall_balance_latest,
+                        account_type=request.POST['inputType'],
+                        bll_mst_item_id=data_bill[0],
+                        remarks=request.POST['inputRemarks'],
+                        account_date=date_time_obj
+                    )
+                    date_time_obj = date_time_obj + relativedelta(months=1)
+            
+            elif request.POST['inputNameBilling'] == "21":
+                amount_out = int(request.POST['inputAmount'])
+                acc_income_expense.objects.create(
+                    description=data_bill[0].item_name,
+                    amount_in=amount_in,
+                    amount_out=amount_out,
+                    overall_balance=datalatest.overall_balance-amount_out,
+                    account_type=request.POST['inputType'],
+                    account_date=request.POST['inputDate'],
+                    bll_mst_item_id=data_bill[0],
+                    remarks=request.POST['inputRemarks']
+                )
+                acc_ar_debt.objects.create(
+                    amount = amount_out,
+                    description = request.POST['inputRemarks'],
+                    account_status = "UNPAID",
+                    account_type = "AR",
+                    bll_mst_item_id = data_bill[0],
+                    valid_status = "VALID"
+                )
+                
+            else:
+                amount_out = int(request.POST['inputAmount'])
+                acc_income_expense.objects.create(
+                    description=data_bill[0].item_name,
+                    # category=request.POST['inputCategory'],
+                    amount_in=amount_in,
+                    amount_out=amount_out,
+                    overall_balance=datalatest.overall_balance-amount_out,
+                    account_type=request.POST['inputType'],
+                    account_date=request.POST['inputDate'],
+                    bll_mst_item_id=data_bill[0],
+                    remarks=request.POST['inputRemarks']
+                )
         
         return HttpResponseRedirect(reverse('createexpense'))
     date= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-01"
-    dataexpense = acc_income_expense.objects.filter(account_date__gte=date).order_by('-account_date')
+    res = calendar.monthrange(datetime.today().year, datetime.today().month)
+    day = str(res[1])
+    date_2= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-"+day
+    dataexpense = acc_income_expense.objects.filter(account_date__gte=date, account_date__lte=date_2).order_by('-account_date')
     data_bill = bll_mst_bill_item.objects.filter(validstatus=1)
     context = {
         'title':'H - Expense',

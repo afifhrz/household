@@ -26,7 +26,7 @@ def index(request):
     # data balance
     data['month_sale']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_IN) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID = 1 AND ACCOUNT_DATE >= "{date}"''')[0]
     data['profit_investment']=0
-    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_OUT-AMOUNT_IN)+1900000 MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
+    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
     data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT ID, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
 
     # data expense chart
@@ -34,37 +34,47 @@ def index(request):
     cursor = connection.cursor()
     category = list(cursor.execute("""select DISTINCT case
 		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (2, 17) then 'MONTHLY-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
 		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
 		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		when BLL_MST_BILL_ITEM_ID in (14) then 'INVESTMENT'
-	end as category from ACC_INC_EXP aie"""))
+		when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
+	end as category from ACC_INC_EXP aie order by category"""))
     category = category[1:]
     
     data_chart = []
+    counter = 0
     for row in category:
-        data_chart.append(list(cursor.execute(f"""select
+        result = list(cursor.execute(f"""select
 	case
 		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (2, 17) then 'MONTHLY-EXPENSE'
+		when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
 		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
 		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		when BLL_MST_BILL_ITEM_ID in (14) then 'INVESTMENT'
+		when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
 	end as category,
-	IFNULL(SUM(AMOUNT_IN),0) + IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
+	IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
        strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' 
        from ACC_INC_EXP
     where category = '{row[0]}'
     group by strftime("%m-%Y", ACCOUNT_DATE), category
-    order by ACCOUNT_DATE;""")))   
+    order by ACCOUNT_DATE;"""))
         
-    date = list(cursor.execute("""select DISTINCT strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' from ACC_INC_EXP order by ACCOUNT_DATE"""))
+        if counter==6:
+            data_chart.append(result[len_temp:len(data_chart[3])+1])   
+        elif counter==3:
+            len_temp = len(result) - len(result[-12:])
+            data_chart.append(result[-12:])
+        else:
+            data_chart.append(result[-12:])
+            
+        counter+=1
+    date = list(cursor.execute("""select DISTINCT strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' from ACC_INC_EXP order by ACCOUNT_DATE"""))[len_temp:len(data_chart[3])+1]
     
     final_data = []
     for cat in data_chart:
@@ -87,7 +97,8 @@ def index(request):
         (139, 211, 70),
         (239, 223, 72),
         (249, 165, 44),
-        (214, 78, 18)
+        (214, 78, 18),
+        (300, 300, 100)
     ]
     color = color[:len(category)]
     final_data = zip(category, final_data, color)    
@@ -98,12 +109,18 @@ def index(request):
     }
     
     # data sales chart
-    sales_chart = acc_income_expense.objects.raw("""select ID,
+    dateIn = ""
+    for item in date:
+        dateIn+="'"+item[0]+"',"
+    dateIn = dateIn[:-1]
+    sales_chart = acc_income_expense.objects.raw(f"""select ID,
 	SUM(AMOUNT_IN) REVENUE,
 	IFNULL(SUM(AMOUNT_OUT),0) EXPENSE,
 	IFNULL((SUM(AMOUNT_IN) - SUM(AMOUNT_OUT)),0) as NET_PROFIT,
        strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' 
-       from ACC_INC_EXP group by strftime("%m-%Y", ACCOUNT_DATE)
+       from ACC_INC_EXP 
+       where month_year IN ({dateIn})
+       group by strftime("%m-%Y", ACCOUNT_DATE)
        order by ACCOUNT_DATE;""")
     
     data_average_expense = []
