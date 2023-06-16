@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
@@ -24,13 +24,23 @@ def studentregistration_view(request):
         return HttpResponseRedirect(reverse('studentregistration'))
 
     datamst = std_mst.objects.filter(validuntil__isnull=True)
+    dataterminated = std_mst.objects.filter(validuntil__isnull=False).order_by('-validuntil')
     context = {
         'title':'H - Student Registration',
         'dashboard_active':'Student',
-        'datamst':datamst
+        'datamst':datamst,
+        'dataterminated':dataterminated
         }
 
     return render(request, 'student/studentregistration_view.html', context)
+
+def activate_student(request, id):
+    if request.method == "PUT":
+        member = std_mst.objects.get(id=id)
+        member.validuntil = None
+        member.date_modified = datetime.today()
+        member.save()
+        return HttpResponse(id)
 
 @csrf_protect
 def courseregistration_view(request):
@@ -76,14 +86,7 @@ def studentterminate_view(request):
             reason = request.POST['inputReason']
             )
         
-    datamst = std_mst.objects.filter(validuntil__isnull=True)
-    context = {
-        'title':'H - Student Registration',
-        'dashboard_active':'Student',
-        'datamst':datamst
-        }
-
-    return render(request, 'student/studentregistration_view.html', context)
+    return HttpResponseRedirect(reverse('studentregistration'))
 
 def completedcourse_view(request):
     if request.method=="POST":

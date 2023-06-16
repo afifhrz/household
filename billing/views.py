@@ -87,10 +87,6 @@ def liststatusbill_view(request):
 	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
 	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
 	WHERE INVOICE_STATUS = 1 AND INVOICE_DATE >= '{date}'""")
-    print(f"""SELECT btb.ID, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
-	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
-	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
-	WHERE INVOICE_STATUS = 1 AND INVOICE_DATE >= '{date}'""")
     context = {
         'title':'H - Status Bill',
         'dashboard_active':'Billing',
@@ -150,7 +146,6 @@ Terimakasih"""
 def paid_invoice(request, id):
     data_bill = bll_trx_billing.objects.filter(id=id)
     data_bill_item = bll_trx_bill_item.objects.filter(btb_id=data_bill[0])
-    # print(data_bill_item.values()[0][""])
     data_mst = bll_mst_bill_item.objects.filter(id=data_bill_item[0].bll_mst_id_id)
     data_last_acc = acc_income_expense.objects.latest('id')
     acc_income_expense.objects.create(

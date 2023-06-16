@@ -48,6 +48,7 @@ class acc_investment_fund(models.Model):
     fund_code = models.CharField(max_length=30, db_column="FUND_NAME") 
     average_nav = models.DecimalField(db_column="AVERAGE_NAV", blank=True, null=True, decimal_places=2, max_digits=20)
     current_nav = models.DecimalField(db_column="CURRENT_NAV", blank=True, null=True, decimal_places=2, max_digits=20)
+    exp_return = models.DecimalField(db_column="EXPECTED_RETURN", blank=True, null=True, decimal_places=4, max_digits=20)
     unit = models.DecimalField(db_column="UNIT", blank=True, null=True, decimal_places=2, max_digits=20)
 
     class Meta:
@@ -60,3 +61,15 @@ class acc_investment_deposit(models.Model):
 
     class Meta:
         db_table = 'ACC_INVESTMENT_DEPOSIT'
+        
+class acc_saving_goal_tracker(models.Model):
+    date_created = models.DateTimeField(default=datetime.now(), db_column="CREATED_DATE")
+    goal_name = models.CharField(max_length=30, db_column="GOAL_NAME") 
+    final_saving_goal = models.DecimalField(db_column="FINAL_SAVING_GOAL", decimal_places=4, max_digits=20)
+    inflation_rate = models.DecimalField(db_column="INFLATION_RATE", decimal_places=4, max_digits=20)
+    curr_value = models.IntegerField(db_column="CURRENT_VALUE")
+    period_in_year = models.IntegerField(db_column="PERIOD_IN_YEAR")
+    fund_id = models.IntegerField(db_column="FUND_ID")
+    
+    class Meta:
+        db_table = 'ACC_SAVING_GOAL_TRACKER'

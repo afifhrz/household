@@ -1,0 +1,178 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/account/saving_goal_tracker/" method="post">{% csrf_token %}
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Create Goal Tracker</h6>
+                        <div class="row mb-3">
+                            <label for="inputGoalName" class="col-sm-3 col-form-label">Goal Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="inputGoalName" name="inputGoalName">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputFundSource" class="col-sm-3 col-form-label">Fund Source</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputFundSource" name="inputFundSource" required=True>
+                                    {% for option in data_fund %}
+                                        <option value={{option.id}}>{{option.fund_code}}</option>
+                                    {% endfor %}
+                                        <option value="0">Stock Investment</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputCurrentValue" class="col-sm-3 col-form-label">Current Value</label>
+                            <div class="col-sm-9">
+                                <input type="number" onchange="getFinalValue()" class="form-control" id="inputCurrentValue" name="inputCurrentValue" step=1>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputInflationRate" class="col-sm-3 col-form-label">Inflation Rate</label>
+                            <div class="col-sm-9">
+                                <input type="number" onchange="getFinalValue()" class="form-control" id="inputInflationRate" name="inputInflationRate" step=0.001>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputPeriod" class="col-sm-3 col-form-label">Period in Year</label>
+                            <div class="col-sm-9">
+                                <input type="number" onchange="getFinalValue()" class="form-control" id="inputPeriod" name="inputPeriod" step=1>
+                            </div>
+                        </div>
+                        <div class="row mb-3" name="FinalValueForm" id="FinalValueForm" style="display:none">
+                            <label for="inputFinalValue" class="col-sm-3 col-form-label">Final Goal</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputFinalValue" name="inputFinalValue" readonly>
+                            </div>
+                        </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Saving Progress</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Goal Name</th>
+                            <th scope="col">Final Saving Goal</th>
+                            <th scope="col">Inflation Rate</th>
+                            <th scope="col">Current Value</th>
+                            <th scope="col">Periode in Year</th>
+                            <th scope="col">Start Funding Date</th>
+                            <th scope="col">Source Fund</th>
+                            <th scope="col">Current Saving</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_saving %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.0.goal_name}}</td>
+                            <td style="text-align:right; min-width: 170px;">{{data.0.final_saving_goal}}</td>
+                            <td>{{data.0.inflation_rate}}</td>
+                            <td style="text-align:right; min-width: 170px;">{{data.0.curr_value}}</td>
+                            <td>{{data.0.period_in_year}}</td>
+                            <td>{{data.0.date_created}}</td>
+                            <td>{{data.0.fund_id}}</td>
+                            <td style="text-align:right; min-width: 150px;">{{data.1}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="9">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="{{data.2}}"
+                                    aria-valuemin="0" aria-valuemax="100" style="width:{{data.2}}%">
+                                    {{data.2}}%
+                                    </div>
+                                </div>
+                            </td>    
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Saving Target Per Month</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Goal Name</th>
+                            <th scope="col">Source Fund</th>
+                            <th scope="col">Annual Expected Return</th>
+                            <th scope="col">Periode in Yr</th>
+                            <th scope="col">Year Saving Target</th>
+                            <th scope="col">Month Saving Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_target_monthly %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.0.goal_name}}</td>
+                            <td style="min-width: 150px;">{{data.0.fund_id}}</td>
+                            <td>{{data.1}}</td>
+                            <td>{{data.0.period_in_year}}</td>
+                            <td style="text-align:right; min-width: 150px;">{{data.2}}</td>
+                            <td style="text-align:right; min-width: 150px;">{{data.3}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+    function getFinalValue(){
+        var curr_value = $('#inputCurrentValue').val();
+        var inflation_rate = $('#inputInflationRate').val();
+        var period_in_year = $('#inputPeriod').val();
+        if (curr_value != "" && inflation_rate != "" && period_in_year != "" ){
+            fetch("/account/get_final_goal/"+inflation_rate+"/"+period_in_year+"/"+curr_value, {
+                method: "GET",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }).then((response) => response.json())
+            .then((data) => {
+                if (data.final_value) {
+                  $('#FinalValueForm').delay(500).slideDown('slow');
+                  $('#inputFinalValue').val(data.final_value);
+                } else {
+                  alert("Failed Get Data!");
+                }
+              }
+            );
+        }
+    }
+
+    $(document).ready( function() {
+        var now = new Date();
+        var month = (now.getMonth() + 1);               
+        var day = now.getDate();
+        if (month < 10) 
+            month = "0" + month;
+        if (day < 10) 
+            day = "0" + day;
+        var today = now.getFullYear() + '-' + month + '-' + day;
+        $('#inputDate').val(today);
+        $('#inputStartDateContract').val(today);
+    });
+</script>
+{% endblock script %}

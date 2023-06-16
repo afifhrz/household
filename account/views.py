@@ -1,10 +1,11 @@
 from django.http import HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from datetime import datetime
 import calendar
-from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_investment_deposit, acc_ar_debt
+from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_investment_deposit, acc_ar_debt, acc_saving_goal_tracker
 from billing.models import bll_mst_bill_item, bll_trx_bill_item
 import urllib
 import requests
@@ -304,3 +305,64 @@ def cancel_ar(request, id):
     data_bill = acc_ar_debt.objects.filter(id=id)
     data_bill.update(valid_status='INVALID')
     return HttpResponse(None)
+
+@csrf_protect
+def saving_goal_tracker_view(request):
+    if request.method == 'POST':
+        acc_saving_goal_tracker.objects.create(
+            goal_name = request.POST['inputGoalName'],
+            final_saving_goal = request.POST['inputFinalValue'],
+            inflation_rate = request.POST['inputInflationRate'],
+            curr_value = request.POST['inputCurrentValue'],
+            period_in_year = request.POST['inputPeriod'],
+            fund_id = request.POST['inputFundSource']
+        )
+        return HttpResponseRedirect(reverse('saving_goal_tracker'))
+
+    data_fund = acc_investment_fund.objects.all()
+    data_saving = acc_saving_goal_tracker.objects.all()
+    fund_val = []
+    process_percentage = []
+    expected_return = []
+    yearly_saving = []
+    monthly_saving = []
+    
+    for data in data_saving:
+        fund_data = acc_investment_fund.objects.filter(id=data.fund_id)
+        
+        if fund_data:
+            fund_name = fund_data[0].fund_code
+            curr_saving = fund_data[0].average_nav*fund_data[0].unit
+            exp_rtn = fund_data[0].exp_return
+        else:
+            fund_name = "Stock Investment"
+            curr_saving = acc_investment_stock.objects.raw("SELECT ID, SUM(LAST_PRICE*LOT) as FUND_VALUE FROM ACC_INVESTMENT_STOCK")[0].FUND_VALUE*100
+            exp_rtn = 0.15
+        yearly_save = -1*npf.pmt(exp_rtn,data.period_in_year,0,int(data.final_saving_goal))
+        
+        expected_return.append('{:20,.2f} %'.format(exp_rtn*100))
+        yearly_saving.append('Rp. {:20,.2f}'.format(yearly_save))
+        monthly_saving.append('Rp. {:20,.2f}'.format(yearly_save/12))
+        fund_val.append('Rp. {:20,.2f}'.format(curr_saving))
+        process_percentage.append(int(curr_saving/data.final_saving_goal*100))
+        data.fund_id = fund_name
+        data.inflation_rate = '{:20,.2f} %'.format(data.inflation_rate*100)
+        data.final_saving_goal = 'Rp. {:20,.2f}'.format(data.final_saving_goal)
+        data.curr_value = 'Rp. {:20,.2f}'.format(data.curr_value)
+    
+    from copy import deepcopy
+    data_target_monthly = zip(data_saving, expected_return, yearly_saving, monthly_saving)
+    data_saving = zip(data_saving, fund_val, process_percentage)
+    
+    context = {
+        'title':'H - Fund Tracker',
+        'dashboard_active':'Account',
+        'data_fund':data_fund,
+        'data_saving':data_saving,
+        'data_target_monthly':data_target_monthly,
+        }
+    return render(request, 'account/saving_goal_tracker_view.html', context)
+
+def get_final_goal(request, inflation_rate, period_in_year, current_value):
+    final_value = int(-1*npf.fv(rate=float(inflation_rate),pmt=0,nper=period_in_year,pv=current_value))
+    return JsonResponse({"final_value":final_value})
