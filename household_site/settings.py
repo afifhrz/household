@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'product',
     'student',
     'account',
+    'tradingstock',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,6 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # SECURE_SSL_REDIRECT = False
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 5 * 60

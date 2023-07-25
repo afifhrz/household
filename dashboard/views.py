@@ -1,16 +1,19 @@
 import datetime
 import calendar
-from django.shortcuts import render
-from dashboard.models import admin_mst_module
-from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_ar_debt, acc_investment_deposit
-from django.db import connection
-import requests
 import urllib
 import json
 
+from django.shortcuts import render
+from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_ar_debt, acc_investment_deposit
+from django.db import connection
+from django.contrib.auth.decorators import login_required
+
+
 # Create your views here.
+@login_required(login_url='/login')
 def index(request):
 
+    month_of_emergency = 4.5
     data = {}
     year = datetime.datetime.today().year
     month = datetime.datetime.today().month
@@ -138,7 +141,7 @@ def index(request):
     ar_data['ar'] = float(acc_ar_debt.objects.raw("SELECT ID, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='AR' ")[0].total_amount)
     total_cash = float(data['overall_balance'].overall_balance) - ar_data['liabilities'] + ar_data['ar']
     ar_data['emergency_fund'] = total_cash
-    ar_data['short'] = total_cash-(3*6541666.67)
+    ar_data['short'] = total_cash-(month_of_emergency*avg)
 	
     
     # data asset

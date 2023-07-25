@@ -3,6 +3,7 @@ from django.urls import reverse
 import urllib.parse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 
 import calendar
 from datetime import datetime
@@ -12,6 +13,7 @@ from billing.models import bll_trx_billing, bll_trx_bill_item, bll_mst_bill_item
 
 # Create your views here.
 @csrf_protect
+@login_required(login_url='/login')
 def generatebillcourse_view(request):
     BLL_MST_ITEM_ID = 1
     if request.method=="POST":
@@ -67,6 +69,7 @@ def generatebillcourse_view(request):
 
     return render(request, 'billing/generatebillcourse_view.html', context)
 
+@login_required(login_url='/login')
 def liststatusbill_view(request):
     
     year = datetime.today().year
@@ -164,6 +167,7 @@ def cancel_invoice(request, id):
     return HttpResponse(None)
 
 @csrf_protect
+@login_required(login_url='/login')
 def createmstbill_view(request):
     if request.method=="POST":
         # dosomething

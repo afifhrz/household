@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,6 +24,10 @@ urlpatterns = [
     path('product/', include('product.urls')),
     path('student/', include('student.urls')),
     path('account/', include('account.urls')),
+    path('trading/', include('tradingstock.urls')),
+    path('login', views.login_page, name='login_page'),
+    path('login_process', views.login_process, name='login_process'),
+    path('logout', views.logout_process, name='logout_process'),
 ]
 
 # handler404 = 'dashboard.views.error_404_view'

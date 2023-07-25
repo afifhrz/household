@@ -12,9 +12,11 @@ import requests
 import json
 import numpy_financial as npf
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 @csrf_protect
+@login_required(login_url='/login')
 def createexpense_view(request):
     if request.method == 'POST':
         data_bill = bll_mst_bill_item.objects.filter(id=request.POST['inputNameBilling'])
@@ -92,21 +94,49 @@ def createexpense_view(request):
                 )
         
         return HttpResponseRedirect(reverse('createexpense'))
-    date= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-01"
-    res = calendar.monthrange(datetime.today().year, datetime.today().month)
-    day = str(res[1])
-    date_2= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-"+day
-    dataexpense = acc_income_expense.objects.filter(account_date__gte=date, account_date__lte=date_2).order_by('-account_date')
+    
+    # filterQueryParams
+    startDate = request.GET.get('startDate','')    
+    if startDate == "":
+        date= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-01"
+    else:
+        date = startDate
+    
+    endDate = request.GET.get('endDate','')
+    if endDate == "":
+        res = calendar.monthrange(datetime.today().year, datetime.today().month)
+        day = str(res[1])
+        date_2= str(datetime.today().year) +"-"+ str(datetime.today().month)+"-"+day    
+    else:
+        date_2 = endDate
+        
+    type = request.GET.get('type','all')
+    typeDict = {
+        'all':list(range(50)),
+        'FIXED-EXPENSE':[7, 8, 11],
+        'MONTHLY-EXPENSE':[2,16,17], 
+        'LAUNDRY':[9], 
+        'EMERGENCY EXPENSE':[4],
+        'SECONDARY NEED':[5],
+        'DINING OUT - VACATION':[12,20],
+        'CHARITY':[10],
+        'INVESTMENT':[14,19,21],
+        
+    }
+        
+    dataexpense = acc_income_expense.objects.filter(account_date__gte=date, account_date__lte=date_2, bll_mst_item_id__in=typeDict.get(type)).order_by('-account_date')
     data_bill = bll_mst_bill_item.objects.filter(validstatus=1)
     context = {
         'title':'H - Expense',
         'dashboard_active':'Account',
         'dataexpense':dataexpense,
-        'databill':data_bill
+        'databill':data_bill,
+        'option_filter':list(typeDict.keys())
         }
     return render(request, 'account/createexpense_view.html', context)
 
 @csrf_protect
+@login_required(login_url='/login')
 def stockinvestment_view(request):
     if request.method == 'POST':
         data_stock = acc_investment_stock.objects.filter(stock_code=request.POST['inputNameStock'])
@@ -201,6 +231,7 @@ def updateprice(request):
     return HttpResponse("Ok")
 
 @csrf_protect
+@login_required(login_url='/login')
 def fundinvestment_view(request):
     if request.method == 'POST':
         data_fund = acc_investment_fund.objects.filter(fund_code=request.POST['inputNameFund'])
@@ -250,6 +281,7 @@ def fundinvestment_view(request):
     return render(request, 'account/fundinvestment_view.html', context)
 
 @csrf_protect
+@login_required(login_url='/login')
 def depoinvestment_view(request):
     if request.method == 'POST':
         new = acc_investment_deposit(
@@ -267,6 +299,7 @@ def depoinvestment_view(request):
         }
     return render(request, 'account/depoinvestment_view.html', context)
 
+@login_required(login_url='/login')
 def arliability_view(request):
     
     year = datetime.today().year
@@ -307,6 +340,7 @@ def cancel_ar(request, id):
     return HttpResponse(None)
 
 @csrf_protect
+@login_required(login_url='/login')
 def saving_goal_tracker_view(request):
     if request.method == 'POST':
         acc_saving_goal_tracker.objects.create(

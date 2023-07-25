@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 
 from student.models import std_mst, std_trx, std_trx_course
 from product.models import prd_mst
@@ -10,6 +11,7 @@ from datetime import datetime
 
 # Create your views here.
 @csrf_protect
+@login_required(login_url='/login')
 def studentregistration_view(request):
     if request.method=="POST":
         # dosomething
@@ -43,6 +45,7 @@ def activate_student(request, id):
         return HttpResponse(id)
 
 @csrf_protect
+@login_required(login_url='/login')
 def courseregistration_view(request):
     if request.method=="POST":
         # dosomething
@@ -77,6 +80,7 @@ def courseregistration_view(request):
     return render(request, 'student/courseregistration_view.html', context)
 
 @csrf_protect
+@login_required(login_url='/login')
 def studentterminate_view(request):
     if request.method=="POST":
         # dosomething
@@ -88,6 +92,7 @@ def studentterminate_view(request):
         
     return HttpResponseRedirect(reverse('studentregistration'))
 
+@login_required(login_url='/login')
 def completedcourse_view(request):
     if request.method=="POST":
         # dosomething

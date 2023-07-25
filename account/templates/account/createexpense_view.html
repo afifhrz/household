@@ -75,6 +75,26 @@
         <div class="col-sm-12 col-xl-12">
             <div class="bg-light rounded h-100 p-4">
                 <h6 class="mb-4">Expense List</h6>
+                <div class="row mb-3">
+                    <label for="filterStartDate" class="col-sm-2 col-form-label">Start Account Date</label>
+                    <div class="col-sm-2">
+                        <input type="date" class="form-control" id="filterStartDate" name="filterStartDate">
+                    </div>
+                    <label for="filterEndDate" class="col-sm-2 col-form-label">End Account Date</label>
+                    <div class="col-sm-2">
+                        <input type="date" class="form-control" id="filterEndDate" name="filterEndDate">
+                    </div>
+                    <div class="col-sm-2">
+                        <select class="form-select" id="filterType" name="filterType">
+                            {% for item in option_filter %}
+                            <option value="{{item}}">{{item}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <button type="submit" id="submitFilter" class="btn btn-primary">Filter</button>
+                    </div>
+                </div>
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -135,5 +155,14 @@
         $('#inputDate').val(today);
         $('#inputStartDateContract').val(today);
     });
+
+    $('#submitFilter').on("click", function() {
+        var startDate = $('#filterStartDate').val() || "";
+        var endDate = $('#filterEndDate').val() || "";
+        var type = $('#filterType').val() || "";
+        
+        window.location='/account/createexpense/?startDate='+startDate+'&endDate='+endDate+'&type='+type;
+    })
+
 </script>
 {% endblock script %}
