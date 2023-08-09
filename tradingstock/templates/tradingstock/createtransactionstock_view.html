@@ -1,0 +1,111 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/trading/createtransactionstock/" method="post">{% csrf_token %}
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Generate Transaction</h6>
+                        <div class="row mb-3">
+                            <label for="inputStockId" class="col-sm-3 col-form-label">Stock Name</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="inputStockId" name="inputStockId" required=True>
+                                    {% for option in datamst %}
+                                        <option value={{option.id}}>{{option.stock_code}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="InputConditionTransaction" class="col-sm-3 col-form-label">Action</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="InputConditionTransaction" name="InputConditionTransaction" required=True>
+                                        <option value="buy">Buy</option>                                                          
+                                        <option value="sell">Sell</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputPrice" class="col-sm-3 col-form-label">Price</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputPrice" name="inputPrice" required=True onchange="FillAmount()">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputLot" class="col-sm-3 col-form-label">Lot</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputLot" name="inputLot" required=True onchange="FillAmount()">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputAmount" class="col-sm-3 col-form-label">Amount</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="inputAmount" name="inputAmount" required=True readonly>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Trading List</h6>
+                <p class="mb-4">Summary : Rp. {{summary}}</p>
+                
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Stock Name</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Lot</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in datatrading %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.mst_id.stock_code}}</td>
+                            <td>{{data.amount}}</td>
+                            <td>{{data.lot}}</td>
+                            <td>{{data.price}}</td>
+                            <td>{{data.date_created}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+
+    $(document).ready( function() {
+        var now = new Date();
+        var month = (now.getMonth() + 1);               
+        var day = now.getDate();
+        if (month < 10) 
+            month = "0" + month;
+        if (day < 10) 
+            day = "0" + day;
+        var today = now.getFullYear() + '-' + month + '-' + day;
+        $('#inputDate').val(today);
+        $('#inputStartDateContract').val(today);
+    });
+
+    function FillAmount(){
+        $('#inputAmount').val($('#inputLot').val() * $('#inputPrice').val() * 100);
+    }
+
+</script>
+{% endblock script %}

@@ -37,12 +37,16 @@ def summary1(daily):
     
     return result
 
-def check_signal_buy(data, prev_data, owned=False):
+def check_signal_buy(data, prev_data, owned=False, buy_price = 1):
     
     if owned:
         # SIGNAL SELL_TAKEPROFIT_CROSS -> SELL IF MA D 3 cross 18
         if prev_data['ma_d_18'] < prev_data['ma_d_3'] and data['ma_d_18'] >= data['ma_d_3']:
             return "SELL_TAKEPROFIT_CROSS"
+        # elif abs(buy_price - data['last_price'])/buy_price*100 >= 15:
+        #     return "SELL_CUTLOSS"
+        else:
+            return "HOLD"
     
     # SIGNAL BUY_SLOW -> THEONE -> BUY IF PRICE LOWER THAN MA 18 AND WHEN MA D 3 CROSS MA_D 18 AND LOWER THAN MA D 200
     if prev_data['ma_d_18'] > prev_data['ma_d_3'] and data['ma_d_18'] <= data['ma_d_3'] and data['last_price'] <= data['ma_d_200']:
@@ -52,11 +56,14 @@ def check_signal_buy(data, prev_data, owned=False):
         return "BUY_FAST"
     # SIGNAL WATCHLIST -> PRICE LOWER THAN MA 18
     elif abs(data['ma_d_18'] - data['last_price'])/data['last_price'] <= .0275:
-        return "WATCHLIST"
-    # elif data['last_price'] >= data['ma_d_7'] and data['ma_d_3'] >= data['ma_d_14'] and data['ma_d_18'] >= data['ma_d_50']:
+        if abs(data['ma_d_3'] - data['ma_d_200'])/data['ma_d_3'] <= .0275:
+            return "WATCHLIST_KETAT"
+        elif abs(data['ma_d_18'] - data['ma_d_3'])/data['ma_d_18'] <= .0275:
+            return "WATCHLIST_WEEKLY"
+        else:
+            return "WATCHLIST"
     elif data['last_price'] >= prev_data['last_open']:
         return "UPTREND"
-    # elif data['last_price'] <= data['ma_d_7'] and data['ma_d_3'] <= data['ma_d_14']:
     elif data['last_price'] < prev_data['last_open']:
         return "DOWNTREND"
     
