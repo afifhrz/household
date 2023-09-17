@@ -140,7 +140,9 @@ Rekening tersedia a/n Ahmad Afif Aulia Hariz
 
 Bank Permata 4159142766
 Bank BRI 627301023198538
+Bank CIMB 762239366600
 Bank Sinarmas 0055573158
+Paypal https://www.paypal.com/paypalme/hrzpay (Please add 5% add-ons for admin fee!)
 
 Terimakasih"""
     message = urllib.parse.quote(message)

@@ -324,13 +324,22 @@ def arliability_paid(request, id):
     data_debt = acc_ar_debt.objects.filter(id=id).values()
     data_mst = bll_mst_bill_item.objects.filter(id=data_debt[0]['bll_mst_item_id_id'])
     data_last_acc = acc_income_expense.objects.latest('id')
-    acc_income_expense.objects.create(
-        description=data_mst[0].item_name,  
-        amount_out=float(data_debt[0]['amount']), 
-        overall_balance=data_last_acc.overall_balance-data_debt[0]['amount'],
-        account_type='Cash',
-        account_date=datetime.today(),
-        bll_mst_item_id=data_mst[0])
+    if data_debt[0]['account_status'] == "LIABILITY":
+        acc_income_expense.objects.create(
+            description=data_mst[0].item_name,  
+            amount_out=float(data_debt[0]['amount']), 
+            overall_balance=data_last_acc.overall_balance-data_debt[0]['amount'],
+            account_type='Cash',
+            account_date=datetime.today(),
+            bll_mst_item_id=data_mst[0])
+    else:
+        acc_income_expense.objects.create(
+            description=data_mst[0].item_name,  
+            amount_in=float(data_debt[0]['amount']), 
+            overall_balance=data_last_acc.overall_balance+data_debt[0]['amount'],
+            account_type='Cash',
+            account_date=datetime.today(),
+            bll_mst_item_id=data_mst[0])
     data_debt.update(account_status="PAID")
     return HttpResponse(None)
 
