@@ -151,6 +151,7 @@ def stockinvestment_view(request):
                 stock_code = request.POST['inputNameStock'],
                 lot = request.POST['inputLot'],
                 average = request.POST['inputAverage'],
+                last_price = int(float(request.POST['inputAverage'])),
                 der_annual = 0,
                 bv_5 = 1,
                 bv_annual = 1,
