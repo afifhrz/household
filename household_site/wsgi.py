@@ -7,6 +7,9 @@ For more information on this file, see
 https://docs.djangoproject.com/en/4.1/howto/deployment/wsgi/
 """
 
+import sys
+sys.path.insert(0, "/home/harizcor/app/household/household_site")
+
 import os
 
 from django.core.wsgi import get_wsgi_application
