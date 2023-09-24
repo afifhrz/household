@@ -26,6 +26,9 @@ SECRET_KEY = 'django-insecure--6(yq81isj+va=ldpg(#3cf0@69-d_r+36(9=jkx18hc0lw%5u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+if not DEBUG:
+    STATIC_ROOT= '/home/harizcor/app/household/household_site/public/'
+
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 
