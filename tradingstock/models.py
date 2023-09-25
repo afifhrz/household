@@ -1,10 +1,11 @@
 from django.db import models
+from django.utils import timezone
 from datetime import datetime
 
 # Create your models here.
         
 class trd_mst_stock(models.Model):
-    date_modified = models.DateTimeField(default=datetime.now(), db_column="MODIFIED_DATE")
+    date_modified = models.DateTimeField(default=timezone.now, db_column="MODIFIED_DATE")
     stock_code = models.CharField(max_length=30, db_column="CODE") 
     valid_status = models.BooleanField(db_column="VALID_STATUS")
 
@@ -14,7 +15,7 @@ class trd_mst_stock(models.Model):
         
 class trd_filtered_stock(models.Model):
     mst_id = models.ForeignKey(trd_mst_stock, on_delete=models.RESTRICT, db_column="TRD_MST_STOCK")
-    date_modified = models.DateTimeField(default=datetime.now(), db_column="MODIFIED_DATE")
+    date_modified = models.DateTimeField(default=timezone.now, db_column="MODIFIED_DATE")
     last_price = models.IntegerField(db_column="LAST_PRICE", default="", null=True, blank=True)
     last_open = models.IntegerField(db_column="LAST_OPEN", default=0)
     ma_d_3 = models.IntegerField(db_column="MA_D_3")
@@ -32,7 +33,7 @@ class trd_filtered_stock(models.Model):
         db_table = 'TRD_FILTERED_STOCK'
 
 class trd_trx_stock(models.Model):
-    date_created = models.DateTimeField(default=datetime.now(), db_column="CREATED_DATE")
+    date_created = models.DateTimeField(default=timezone.now, db_column="CREATED_DATE")
     mst_id = models.ForeignKey(trd_mst_stock, on_delete=models.RESTRICT, db_column="TRD_MST_STOCK")
     lot = models.IntegerField(db_column="LOT")
     price = models.IntegerField(db_column="PRICE", default="", null=True, blank=True)
