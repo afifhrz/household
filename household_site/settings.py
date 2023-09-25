@@ -26,11 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = "True" == os.environ['PRODUCTION_STATUS']
+DEBUG = "True" != os.environ['PRODUCTION_STATUS']
 
 STATIC_ROOT= os.environ['STATIC_ROOT']
 
-ALLOWED_HOSTS = ['household.harizcorp.biz.id']
+if DEBUG:
+    ALLOWED_HOSTS = ['household.harizcorp.biz.id', "*"]
+else:
+    ALLOWED_HOSTS = ['household.harizcorp.biz.id']
+    
 CORS_ORIGIN_ALLOW_ALL = True
 
 

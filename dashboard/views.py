@@ -27,15 +27,15 @@ def index(request):
     
     
     # data balance
-    data['month_sale']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_IN) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID = 1 AND ACCOUNT_DATE >= "{date}"''')[0]
+    data['month_sale']=acc_income_expense.objects.raw(f'''SELECT id, SUM(AMOUNT_IN) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID = 1 AND ACCOUNT_DATE >= "{date}"''')[0]
     data['profit_investment']=0
-    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT ID, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
-    data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT ID, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
+    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT id, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
+    data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT id, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
 
     # data expense chart
     
     cursor = connection.cursor()
-    category = list(cursor.execute("""select DISTINCT case
+    cursor.execute("""select DISTINCT case
 		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
 		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
@@ -44,29 +44,34 @@ def index(request):
 		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
 		when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
-	end as category from ACC_INC_EXP aie order by category"""))
+	end as category from ACC_INC_EXP aie order by category""")
+    category = list(cursor.fetchall())
     category = category[1:]
     
     data_chart = []
     counter = 0
     for row in category:
-        result = list(cursor.execute(f"""select
-	case
-		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
-		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
-		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
-		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
-	end as category,
-	IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
-       strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' 
-       from ACC_INC_EXP
-    where category = '{row[0]}'
-    group by strftime("%m-%Y", ACCOUNT_DATE), category
-    order by ACCOUNT_DATE;"""))
+        cursor.execute(
+            f"""SELECT * FROM
+            (select
+                case
+                    when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
+                    when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
+                    when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
+                    when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
+                    when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
+                    when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
+                    when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
+                    when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
+                end as category,
+                IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
+                DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
+                FROM ACC_INC_EXP
+                group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y"), category
+                order by ACCOUNT_DATE)
+            as tabel1
+            where category = '{row[0]}';""")
+        result = list(cursor.fetchall())
         
         if counter==6:
             data_chart.append(result[len_temp:len(data_chart[3])+1])   
@@ -77,7 +82,8 @@ def index(request):
             data_chart.append(result[-12:])
             
         counter+=1
-    date = list(cursor.execute("""select DISTINCT strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' from ACC_INC_EXP order by ACCOUNT_DATE"""))[len_temp:len(data_chart[3])+1]
+    cursor.execute("""select DISTINCT DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' from ACC_INC_EXP order by ACCOUNT_DATE""")
+    date = list(cursor.fetchall())[len_temp:len(data_chart[3])+1]
     
     final_data = []
     for cat in data_chart:
@@ -86,7 +92,7 @@ def index(request):
             status = False
             for item in cat:
                 if item[2] == tanggal[0]:
-                    temp_data_chart.append(item[1])
+                    temp_data_chart.append(float(item[1]))
                     status = True
                     break
             if status == False:
@@ -116,29 +122,32 @@ def index(request):
     for item in date:
         dateIn+="'"+item[0]+"',"
     dateIn = dateIn[:-1]
-    sales_chart = acc_income_expense.objects.raw(f"""select ID,
-	SUM(AMOUNT_IN) REVENUE,
-	IFNULL(SUM(AMOUNT_OUT),0) EXPENSE,
-	IFNULL((SUM(AMOUNT_IN) - SUM(AMOUNT_OUT)),0) as NET_PROFIT,
-       strftime("%m-%Y", ACCOUNT_DATE) as 'month_year' 
-       from ACC_INC_EXP 
-       where month_year IN ({dateIn})
-       group by strftime("%m-%Y", ACCOUNT_DATE)
-       order by ACCOUNT_DATE;""")
-    
+    cursor.execute(
+        f"""SELECT * FROM 
+        (select id,
+            SUM(AMOUNT_IN) REVENUE,
+            IFNULL(SUM(AMOUNT_OUT),0) EXPENSE,
+            IFNULL((SUM(AMOUNT_IN) - SUM(AMOUNT_OUT)),0) as NET_PROFIT,
+            DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
+            from ACC_INC_EXP 
+            group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y")
+            order by ACCOUNT_DATE)
+        as tabel1
+        where month_year IN ({dateIn});""")
+    sales_chart = cursor.fetchall()
+
     data_average_expense = []
     sum_data = 0
     for data_amount_out in sales_chart:
-        sum_data += data_amount_out.EXPENSE
+        sum_data += float(data_amount_out[2])
     avg = sum_data//len(sales_chart)
     for data_amount_out in sales_chart:
-        data_average_expense.append(avg)
-    
+        data_average_expense.append(avg) 
 
     # liabilities, ar, short_inv
     ar_data = {}
-    ar_data['liabilities'] = float(acc_ar_debt.objects.raw("SELECT ID, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='LIABILITY' ")[0].total_amount)
-    ar_data['ar'] = float(acc_ar_debt.objects.raw("SELECT ID, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='AR' ")[0].total_amount)
+    ar_data['liabilities'] = float(acc_ar_debt.objects.raw("SELECT id, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='LIABILITY' ")[0].total_amount)
+    ar_data['ar'] = float(acc_ar_debt.objects.raw("SELECT id, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='AR' ")[0].total_amount)
     total_cash = float(data['overall_balance'].overall_balance) - ar_data['liabilities'] + ar_data['ar']
     ar_data['emergency_fund'] = total_cash
     ar_data['short'] = total_cash-(month_of_emergency*avg)
@@ -156,7 +165,7 @@ def index(request):
     asset['stock_inv'] = total_price
     asset['stock_percentage'] = (asset['stock_inv']-float(avg_price))/float(avg_price)*100
 
-    asset['fund_inv'] = acc_investment_fund.objects.raw("SELECT ID, round(SUM(CURRENT_NAV*UNIT)-(select (20000000 + (CURRENT_NAV-1224.21) * 16337.0663) from ACC_INVESTMENT_FUND aif where id = 2),2) total_fund from ACC_INVESTMENT_FUND aif")[0]
+    asset['fund_inv'] = acc_investment_fund.objects.raw("SELECT id, round(SUM(CURRENT_NAV*UNIT)-(select (20000000 + (CURRENT_NAV-1224.21) * 16337.0663) from ACC_INVESTMENT_FUND aif where id = 2),2) total_fund from ACC_INVESTMENT_FUND aif")[0]
     
     url = "https://data-asg.goldprice.org/dbXRates/IDR"
     req = urllib.request.Request(url)
@@ -177,9 +186,9 @@ def index(request):
     asset['gold_percentage'] = round((asset['gold_inv']-5*800000)/(5*800000)*100,2)    
     asset['total_asset'] = float(total_cash) + float(asset['fund_inv'].total_fund) + asset['stock_inv'] + asset['gold_inv']
     
-    modal = acc_investment_deposit.objects.raw("select id, sum(amount) as total_modal from acc_investment_deposit")[0]
+    modal = acc_investment_deposit.objects.raw("select id, sum(amount) as total_modal from ACC_INVESTMENT_DEPOSIT")[0]
     data['profit_investment'] = round(-float(modal.total_modal) + (float(asset['fund_inv'].total_fund) + asset['stock_inv']),2)
-    data['profit_percentage'] = round(data['profit_investment']/modal.total_modal*100,2)
+    data['profit_percentage'] = round(data['profit_investment']/float(modal.total_modal)*100,2)
     
     context = {
         'title':'Dashboard Edumin',

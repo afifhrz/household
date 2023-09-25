@@ -447,12 +447,12 @@
         type: "line",
         data: {
             labels: [ {% for data in sales  %}
-            {{'"'}}{{data.month_year}}{{'",'}}
+            {{'"'}}{{data.4}}{{'",'}}
             {% endfor %} ],
             datasets: [{
                     label: "Net Profit",
                     data: [ {% for data in sales %}
-                        {{data.NET_PROFIT}}{{','}}
+                        {{data.3}}{{','}}
                     {% endfor %} ],
                     backgroundColor: "rgba(0, 156, 255, .5)",
                     fill: true
@@ -460,7 +460,7 @@
                 {
                     label: "Revenue",
                     data: [{% for data in sales %}
-                    {{data.REVENUE}}{{','}}
+                    {{data.1}}{{','}}
                 {% endfor %}],
                     backgroundColor: "rgba(0, 156, 255, .3)",
                     fill: true
@@ -468,7 +468,7 @@
                 {
                     label: "Expense",
                     data: [{% for data in sales %}
-                    {{data.EXPENSE}}{{','}}
+                    {{data.2}}{{','}}
                 {% endfor %}],
                     backgroundColor: "rgba(200, 0, 0, 1)",
                     fill: false
