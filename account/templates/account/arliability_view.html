@@ -124,7 +124,7 @@
             var $ids =  $('#buttonPaid{{data.id}}').val();
             $.ajax({
                 type: "GET",
-                url: "{{ request.get_host }}/account/arliability_paid/"+$ids,
+                url: "/account/arliability_paid/"+$ids,
                 success:function(data){
                     window.location.reload();
                 }
@@ -136,7 +136,7 @@
             var $ids =  $('#buttonPaid{{data.id}}').val();
             $.ajax({
                 type: "GET",
-                url: "{{ request.get_host }}/account/cancel_ar/"+$ids,
+                url: "/account/cancel_ar/"+$ids,
                 success:function(data){
                     window.location.reload();
                 }
@@ -151,7 +151,7 @@
             var $ids =  $('#buttonPaid{{data.id}}').val();
             $.ajax({
                 type: "GET",
-                url: "{{ request.get_host }}/account/arliability_paid/"+$ids,
+                url: "/account/arliability_paid/"+$ids,
                 success:function(data){
                     window.location.reload();
                 }
@@ -163,7 +163,7 @@
             var $ids =  $('#buttonPaid{{data.id}}').val();
             $.ajax({
                 type: "GET",
-                url: "{{ request.get_host }}/account/cancel_ar/"+$ids,
+                url: "/account/cancel_ar/"+$ids,
                 success:function(data){
                     window.location.reload();
                 }
