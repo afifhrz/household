@@ -26,17 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ['PRODUCTION_STATUS']
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 STATIC_ROOT= os.environ['STATIC_ROOT']
-=======
-STATIC_ROOT= '/home/harizcor/household/household_site/public/'
->>>>>>> cefdc451af01c02e8f01144a5e80d0ab3e267e78
-=======
-STATIC_ROOT= '/home/harizcor/household/household_site/public/'
->>>>>>> cefdc451af01c02e8f01144a5e80d0ab3e267e78
 
 ALLOWED_HOSTS = ['household.harizcorp.biz.id']
 CORS_ORIGIN_ALLOW_ALL = True
