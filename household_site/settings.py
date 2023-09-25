@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ['PRODUCTION_STATUS']
+DEBUG = "True" == os.environ['PRODUCTION_STATUS']
 
 STATIC_ROOT= os.environ['STATIC_ROOT']
 
@@ -147,10 +147,10 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-SECURE_SSL_REDIRECT = os.environ['PRODUCTION_STATUS']
+SECURE_SSL_REDIRECT = "True" == os.environ['PRODUCTION_STATUS']
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_SECURE = os.environ['PRODUCTION_STATUS']
-CSRF_COOKIE_SECURE = os.environ['PRODUCTION_STATUS']
+SESSION_COOKIE_SECURE = "True" == os.environ['PRODUCTION_STATUS']
+CSRF_COOKIE_SECURE = "True" == os.environ['PRODUCTION_STATUS']
 SESSION_COOKIE_AGE = 10 * 60
 SESSION_SAVE_EVERY_REQUEST = True
