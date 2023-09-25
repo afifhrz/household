@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,15 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--6(yq81isj+va=ldpg(#3cf0@69-d_r+36(9=jkx18hc0lw%5u'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-if not DEBUG:
-    STATIC_ROOT= '/home/harizcor/app/household/household_site/public/'
+STATIC_ROOT= os.environ['STATIC_ROOT']
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['household.harizcorp.biz.id']
 CORS_ORIGIN_ALLOW_ALL = True
 
 
@@ -88,8 +89,15 @@ WSGI_APPLICATION = 'household_site.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            "host":os.environ['DB_HOST'],
+            "port":int(os.environ['DB_PORT']),
+            "database": os.environ['DB_DATABASE'],
+            "user" : os.environ['DB_USER'],
+            "password" : os.environ['DB_PASSWORD'],
+            "charset" : os.environ['DB_DEFAULT_CHARSET'],
+        },
     }
 }
 
@@ -128,7 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'public/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "staticfiles"), 

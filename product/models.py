@@ -4,7 +4,7 @@ from django.db import models
 # Create your models here.
 class prd_mst(models.Model):
     course_name = models.CharField(max_length=30, db_column="COURSE_NAME")
-    description = models.CharField(max_length=30, db_column="DESCRIPTION")
+    description = models.CharField(max_length=150, db_column="DESCRIPTION")
     validuntil = models.DateField(blank=True, null=True, db_column="VALID_UNTIL")
     remarks = models.CharField(max_length=30, blank=True, null=True, db_column="REMARKS")
     date_created = models.DateField(default=datetime.date.today, blank=True, db_column="DATE_CREATED")

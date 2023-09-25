@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf.urls.static import static
+from django.conf import settings
 from . import views
 
 urlpatterns = [
+    path('', include('dashboard.urls')),
     path('admin/', admin.site.urls),
     path('home/', include('dashboard.urls')),
     path('billing/', include('billing.urls')),
@@ -28,6 +31,6 @@ urlpatterns = [
     path('login', views.login_page, name='login_page'),
     path('login_process', views.login_process, name='login_process'),
     path('logout', views.logout_process, name='logout_process'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # handler404 = 'dashboard.views.error_404_view'

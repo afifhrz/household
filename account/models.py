@@ -45,7 +45,7 @@ class acc_investment_stock(models.Model):
         
 class acc_investment_fund(models.Model):
     date_modified = models.DateTimeField(default=datetime.now(), db_column="MODIFIED_DATE")
-    fund_code = models.CharField(max_length=30, db_column="FUND_NAME") 
+    fund_code = models.CharField(max_length=100, db_column="FUND_NAME") 
     average_nav = models.DecimalField(db_column="AVERAGE_NAV", blank=True, null=True, decimal_places=2, max_digits=20)
     current_nav = models.DecimalField(db_column="CURRENT_NAV", blank=True, null=True, decimal_places=2, max_digits=20)
     exp_return = models.DecimalField(db_column="EXPECTED_RETURN", blank=True, null=True, decimal_places=4, max_digits=20)

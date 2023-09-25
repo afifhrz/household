@@ -1,1 +1,7 @@
 __pycache__
+household_site/public
+.env
+cmd.bat
+db.sqlite3
+design_database.xlsx
+dump.sql
