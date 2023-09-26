@@ -65,9 +65,9 @@ def courseregistration_view(request):
     
     data_std = std_mst.objects.filter(validuntil__isnull=True)
     data_prd = prd_mst.objects.filter(validuntil__isnull=True)
-    data_trx = std_trx.objects.raw('''SELECT st.ID, sm.NAME, st.AMOUNT FROM STD_TRX st
-	JOIN STD_MST sm ON sm.ID = st.STD_MST_ID 
-	WHERE sm.VALID_UNTIL ISNULL''')
+    data_trx = std_trx.objects.raw('''SELECT st.id, sm.NAME, st.AMOUNT FROM STD_TRX st
+	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
+	WHERE sm.VALID_UNTIL IS NULL''')
 
     context = {
         'title':'H - Course Registration',
@@ -107,17 +107,17 @@ def completedcourse_view(request):
         member.save()
         return HttpResponseRedirect(reverse('completedcourse'))
     
-    datastd = std_mst.objects.raw('''SELECT * FROM STD_MST where ID in (SELECT st.STD_MST_ID FROM STD_TRX st
-	JOIN STD_MST sm ON sm.ID = st.STD_MST_ID 
-	WHERE sm.VALID_UNTIL ISNULL)''')
+    datastd = std_mst.objects.raw('''SELECT * FROM STD_MST where id in (SELECT st.STD_MST_ID FROM STD_TRX st
+	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
+	WHERE sm.VALID_UNTIL IS NULL)''')
     
-    data_trx = std_trx_course.objects.raw('''SELECT stc.ID, sm.NAME, stc.DATETIME, stc.AMOUNT_HOUR FROM STD_TRX_COURSE stc
+    data_trx = std_trx_course.objects.raw('''SELECT stc.id, sm.NAME, stc.DATETIME, stc.AMOUNT_HOUR FROM STD_TRX_COURSE stc
 	left join STD_TRX st on stc.STD_TRX_ID = st.id
-	left join STD_MST sm on st.STD_MST_ID =sm.ID
-	WHERE stc.ID not in (SELECT STD_TRX_COURSE_ID FROM BLL_TRX_BILL_ITEM btbi
-	left join BLL_TRX_BILLING btb on btbi .BLL_TRX_BILLING_ID = btb.ID
+	left join STD_MST sm on st.STD_MST_ID =sm.id
+	WHERE stc.id not in (SELECT STD_TRX_COURSE_ID FROM BLL_TRX_BILL_ITEM btbi
+	left join BLL_TRX_BILLING btb on btbi .BLL_TRX_BILLING_ID = btb.id
 	where btb.INVOICE_STATUS = 1)
-    AND sm.VALID_UNTIL isnull
+    AND sm.VALID_UNTIL is null
 	ORDER BY DATETIME DESC''')
 
     context = {
