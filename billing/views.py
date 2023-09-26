@@ -32,7 +32,7 @@ def generatebillcourse_view(request):
 
         datacourse = std_trx_course.objects.raw(f"""
         SELECT * FROM STD_TRX_COURSE WHERE STD_TRX_ID = {datastd[0].id} AND
-        VALID_UNTIL ISNULL AND
+        VALID_UNTIL IS NULL AND
         DATETIME >= '{request.POST['inputStartDate']}' AND
         DATETIME <= '{request.POST['inputEndDate']} 23:59:59'
         """)
@@ -57,9 +57,9 @@ def generatebillcourse_view(request):
 
         return HttpResponseRedirect(reverse('generatebillcourse'))
 
-    datastd = std_mst.objects.raw('''SELECT * FROM STD_MST where ID in (SELECT st.STD_MST_ID FROM STD_TRX st
-	JOIN STD_MST sm ON sm.ID = st.STD_MST_ID 
-	WHERE sm.VALID_UNTIL ISNULL)''')
+    datastd = std_mst.objects.raw('''SELECT * FROM STD_MST where id in (SELECT st.STD_MST_ID FROM STD_TRX st
+	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
+	WHERE sm.VALID_UNTIL IS NULL)''')
 
     context = {
         'title':'H - Invoice Generator',
@@ -81,12 +81,12 @@ def liststatusbill_view(request):
     total_day = calendar.monthrange(year, month)[1]
     enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
     
-    data_unpaid_bill = bll_trx_billing.objects.raw("""SELECT btb.ID, btb.INVOICE_DATE, btb.TOBE_PAID, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
+    data_unpaid_bill = bll_trx_billing.objects.raw("""SELECT btb.id, btb.INVOICE_DATE, btb.TOBE_PAID, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
 	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
 	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
 	WHERE INVOICE_STATUS = 8
     ORDER BY TOBE_PAID DESC""")
-    data_paid_bill = bll_trx_billing.objects.raw(f"""SELECT btb.ID, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
+    data_paid_bill = bll_trx_billing.objects.raw(f"""SELECT btb.id, btb.INVOICE_DATE, btb.TOTAL_AMOUNT, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
 	JOIN STD_TRX st ON st.id = btb.STD_TRX_ID 
 	JOIN STD_MST sm ON sm.id = st.STD_MST_ID 
 	WHERE INVOICE_STATUS = 1 AND INVOICE_DATE >= '{date}'""")
@@ -99,11 +99,11 @@ def liststatusbill_view(request):
     return render(request, 'billing/liststatusbill_view.html', context)
 
 def send_invoice(request, id):
-    data = std_trx_course.objects.raw(f"""SELECT stc.ID, SUM(stc .AMOUNT_HOUR) as TOTAL_HOUR, st.AMOUNT as AMOUNT_PERHOUR, sm.NAME, sm.GENDER, sm.BOOKED_PHONE, SUM(stc .AMOUNT_HOUR)*st.AMOUNT as TOTAL_AMOUNT
+    data = std_trx_course.objects.raw(f"""SELECT stc.id, SUM(stc .AMOUNT_HOUR) as TOTAL_HOUR, st.AMOUNT as AMOUNT_PERHOUR, sm.NAME, sm.GENDER, sm.BOOKED_PHONE, SUM(stc .AMOUNT_HOUR)*st.AMOUNT as TOTAL_AMOUNT
 FROM STD_TRX_COURSE stc 
-	JOIN STD_TRX st ON stc.STD_TRX_ID = st.ID
-	JOIN STD_MST sm on st.STD_MST_ID = sm.ID 
-	WHERE stc.ID IN 
+	JOIN STD_TRX st ON stc.STD_TRX_ID = st.id
+	JOIN STD_MST sm on st.STD_MST_ID = sm.id 
+	WHERE stc.id IN 
 		(SELECT STD_TRX_COURSE_ID FROM BLL_TRX_BILL_ITEM btbi
 			WHERE btbi.BLL_TRX_BILLING_ID = {id})""")
 
