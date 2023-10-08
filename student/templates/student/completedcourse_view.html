@@ -45,6 +45,7 @@
                             <th scope="col">Name</th>
                             <th scope="col">Datetime</th>
                             <th scope="col">Amount Hour</th>
+                            <th scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,6 +55,10 @@
                             <td>{{data.NAME}}</td>
                             <td>{{data.date_time}}</td>
                             <td>{{data.amount_hour}}</td>
+                            <td>
+                                <input type="button" id="buttonCancel{{data.id}}" value={{data.id}} hidden>
+                                <button type="button" class="btn btn-danger open-Cancel{{data.id}}" style="height:25px; width:60px; font-size:10px">Cancel</button>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -63,6 +68,20 @@
     </div>
 </div>
 
-<script>
-</script>
 {% endblock content %}
+{% block script %}
+{% for data in data_trxcourse %}
+    <script>
+        $(document).on("click", ".open-Cancel{{data.id}}", function () {
+            var $ids =  $('#buttonCancel{{data.id}}').val();
+            $.ajax({
+                type: "GET",
+                url: "http://{{ request.get_host }}/student/canceledcourse/"+$ids,
+                success:function(data){
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+{% endfor %}
+{% endblock script %}

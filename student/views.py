@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 
 from student.models import std_mst, std_trx, std_trx_course
 from product.models import prd_mst
-
 from datetime import datetime
 
 # Create your views here.
@@ -118,6 +117,7 @@ def completedcourse_view(request):
 	left join BLL_TRX_BILLING btb on btbi .BLL_TRX_BILLING_ID = btb.id
 	where btb.INVOICE_STATUS = 1)
     AND sm.VALID_UNTIL is null
+    AND stc.VALID_UNTIL IS NULL
 	ORDER BY DATETIME DESC''')
 
     context = {
@@ -128,3 +128,8 @@ def completedcourse_view(request):
         }
 
     return render(request, 'student/completedcourse_view.html', context)
+
+def cancel_course(request, id):
+    data_std = std_trx_course.objects.filter(id=id)
+    data_std.update(validuntil=datetime.today())
+    return HttpResponse(None)
