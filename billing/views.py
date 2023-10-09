@@ -31,10 +31,20 @@ def generatebillcourse_view(request):
             std_trx_id=datastd[0])
 
         datacourse = std_trx_course.objects.raw(f"""
-        SELECT * FROM STD_TRX_COURSE WHERE STD_TRX_ID = {datastd[0].id} AND
-        VALID_UNTIL IS NULL AND
-        DATETIME >= '{request.POST['inputStartDate']}' AND
-        DATETIME <= '{request.POST['inputEndDate']} 23:59:59'
+        SELECT * FROM STD_TRX_COURSE 
+        WHERE STD_TRX_ID = {datastd[0].id} 
+            AND VALID_UNTIL IS NULL 
+            AND DATETIME >= '{request.POST['inputStartDate']}' 
+            AND DATETIME <= '{request.POST['inputEndDate']} 23:59:59'
+            AND ID in (SELECT stc.id FROM STD_TRX_COURSE stc
+        left join STD_TRX st on stc.STD_TRX_ID = st.id
+        left join STD_MST sm on st.STD_MST_ID =sm.id
+        WHERE stc.id not in (SELECT STD_TRX_COURSE_ID FROM BLL_TRX_BILL_ITEM btbi
+        left join BLL_TRX_BILLING btb on btbi .BLL_TRX_BILLING_ID = btb.id
+        where btb.INVOICE_STATUS = 1)
+        AND sm.VALID_UNTIL is null
+        AND stc.VALID_UNTIL IS NULL
+        ORDER BY DATETIME DESC)
         """)
 
         amount = 0
