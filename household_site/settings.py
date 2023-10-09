@@ -145,6 +145,7 @@ STATIC_URL = 'public/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "staticfiles"), 
+    os.path.join(BASE_DIR, "household_site/public"), 
 ]
 
 
