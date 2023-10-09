@@ -28,7 +28,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = "True" != os.environ['PRODUCTION_STATUS']
 
-STATIC_ROOT= os.environ['STATIC_ROOT']
+STATIC_ROOT = os.environ['STATIC_ROOT']
 
 if DEBUG:
     ALLOWED_HOSTS = ['household.harizcorp.biz.id', "*"]
@@ -145,7 +145,6 @@ STATIC_URL = 'public/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "staticfiles"), 
-    os.path.join(BASE_DIR, "household_site/public"), 
 ]
 
 
