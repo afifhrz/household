@@ -28,10 +28,8 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = "True" != os.environ['PRODUCTION_STATUS']
 
-if DEBUG:
-    STATIC_URL = 'staticfiles/'
-else:
-    STATIC_ROOT = os.environ['STATIC_ROOT']
+STATIC_URL = 'staticfiles/'
+STATIC_ROOT = os.environ['STATIC_ROOT']
 
 
 if DEBUG:
