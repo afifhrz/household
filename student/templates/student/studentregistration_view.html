@@ -223,7 +223,7 @@
             $.ajax({
                 type: "PUT",
                 headers: {'X-CSRFToken': csrftoken},
-                url: "http://{{ request.get_host }}/student/activate/"+$ids,
+                url: "/student/activate/"+$ids,
                 success:function(data){
                     window.location.reload();
                 }
