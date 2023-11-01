@@ -161,7 +161,7 @@ def index(request):
     # liabilities, ar, short_inv
     ar_data = {}
     ar_data['liabilities'] = float(acc_ar_debt.objects.raw("SELECT id, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='LIABILITY' ")[0].total_amount)
-    ar_data['ar'] = float(acc_ar_debt.objects.raw("SELECT id, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='AR' ")[0].total_amount)
+    ar_data['ar'] = float(acc_ar_debt.objects.raw("SELECT id, IFNULL(SUM(AMOUNT),0) total_amount FROM ACC_AR_DEBT WHERE ACCOUNT_STATUS = 'UNPAID' AND ACCOUNT_TYPE='AR' AND VALID_STATUS = 'VALID' ")[0].total_amount)
     total_cash = float(data['overall_balance'].overall_balance) - ar_data['liabilities'] + ar_data['ar']
     ar_data['emergency_fund'] = total_cash
     ar_data['short'] = total_cash-(month_of_emergency*avg)
