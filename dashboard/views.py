@@ -33,7 +33,6 @@ def index(request):
     data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT id, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
 
     # data expense chart
-    
     cursor = connection.cursor()
     cursor.execute("""select DISTINCT case
 		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
@@ -43,7 +42,7 @@ def index(request):
 		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
 		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
 		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
+		when BLL_MST_BILL_ITEM_ID in (14, 19) then 'INVESTMENT'
 	end as category from ACC_INC_EXP aie order by category""")
     category = list(cursor.fetchall())
     category = category[1:]
@@ -62,7 +61,7 @@ def index(request):
                     when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
                     when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
                     when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-                    when BLL_MST_BILL_ITEM_ID in (14, 19, 21) then 'INVESTMENT'
+                    when BLL_MST_BILL_ITEM_ID in (14, 19) then 'INVESTMENT'
                 end as category,
                 IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
                 DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
