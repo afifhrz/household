@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login')
 def index(request):
 
-    month_of_emergency = 4.5
+    month_of_emergency = 3
     data = {}
     year = datetime.datetime.today().year
     month = datetime.datetime.today().month
@@ -136,12 +136,27 @@ def index(request):
         where month_year IN ({dateIn});""")
     sales_chart = cursor.fetchall()
 
+    cursor.execute(
+        f"""SELECT * FROM 
+            (
+                select 	id,
+                SUM(AMOUNT_OUT) EXPENSE,
+                DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
+                from ACC_INC_EXP 
+                WHERE BLL_MST_BILL_ITEM_ID IN (7,8,11,2,16,17)
+                group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y")
+                order by ACCOUNT_DATE
+            )
+        as tabel1
+        where month_year IN ({dateIn});"""
+        )
+    data_average = cursor.fetchall()
     data_average_expense = []
     sum_data = 0
-    for data_amount_out in sales_chart:
-        sum_data += float(data_amount_out[2])
-    avg = sum_data//len(sales_chart)
-    for data_amount_out in sales_chart:
+    for data_amount_out in data_average:
+        sum_data += float(data_amount_out[1])
+    avg = sum_data//len(data_average)
+    for data_amount_out in data_average:
         data_average_expense.append(avg) 
 
     # liabilities, ar, short_inv

@@ -28,7 +28,9 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = "True" != os.environ['PRODUCTION_STATUS']
 
-STATIC_ROOT= os.environ['STATIC_ROOT']
+STATIC_URL = '/public/'
+STATIC_ROOT = os.environ['STATIC_ROOT']
+
 
 if DEBUG:
     ALLOWED_HOSTS = ['household.harizcorp.biz.id', "*"]
@@ -140,8 +142,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-
-STATIC_URL = 'public/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "staticfiles"), 
