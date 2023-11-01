@@ -120,7 +120,7 @@ def createexpense_view(request):
         'SECONDARY NEED':[5],
         'DINING OUT - VACATION':[12,20],
         'CHARITY':[10],
-        'INVESTMENT':[14,19,21],
+        'INVESTMENT':[14,19],
         
     }
         
