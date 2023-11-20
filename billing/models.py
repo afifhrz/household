@@ -10,6 +10,7 @@ class bll_mst_bill_item(models.Model):
     validstatus = models.IntegerField(default=1, blank=True, null=True, db_column="VALID_STATUS")
     date_created = models.DateField(default=datetime.date.today, blank=True, db_column="DATE_CREATED")
     created_by = models.CharField(max_length=30, db_column="CREATED_BY")
+    category = models.CharField(max_length=30, db_column="CATEGORY", default="MONTHLY-EXPENSE")
 
     class Meta:
         db_table = 'BLL_MST_BILL_ITEM'
