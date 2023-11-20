@@ -29,52 +29,42 @@ def index(request):
     # data balance
     data['month_sale']=acc_income_expense.objects.raw(f'''SELECT id, SUM(AMOUNT_IN) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID = 1 AND ACCOUNT_DATE >= "{date}"''')[0]
     data['profit_investment']=0
-    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT id, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID NOT IN  (1,6) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
+    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT aie.id, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP aie
+	left join BLL_MST_BILL_ITEM bmbi ON bmbi .id = aie.BLL_MST_BILL_ITEM_ID 
+	WHERE bmbi.DEBET_CREDIT = 1
+	AND bmbi.VALID_STATUS = 1
+	AND bmbi.id <> 21 AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
+    # print(date, enddate)
     data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT id, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
 
     # data expense chart
     cursor = connection.cursor()
-    cursor.execute("""select DISTINCT case
-		when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
-		when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
-		when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
-		when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
-		when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-		when BLL_MST_BILL_ITEM_ID in (14, 19) then 'INVESTMENT'
-	end as category from ACC_INC_EXP aie order by category""")
+    cursor.execute("""select DISTINCT bmbi.CATEGORY as category from ACC_INC_EXP aie
+	left join BLL_MST_BILL_ITEM bmbi ON bmbi.ID = aie.BLL_MST_BILL_ITEM_ID 
+	where bmbi.DEBET_CREDIT = 1
+	order by category """)
     category = list(cursor.fetchall())
-    category = category[1:]
     
     data_chart = []
     counter = 0
     for row in category:
         cursor.execute(
             f"""SELECT * FROM
-            (select
-                case
-                    when BLL_MST_BILL_ITEM_ID in (7,8,11) then 'FIXED-EXPENSE'
-                    when BLL_MST_BILL_ITEM_ID in (2, 16, 17) then 'MONTHLY-EXPENSE'
-                    when BLL_MST_BILL_ITEM_ID in (9) then 'LAUNDRY'
-                    when BLL_MST_BILL_ITEM_ID in (4) then 'EMERGENCY EXPENSE'
-                    when BLL_MST_BILL_ITEM_ID in (5) then 'SECONDARY NEED'
-                    when BLL_MST_BILL_ITEM_ID in (12, 20) then 'DINING OUT - VACATION'
-                    when BLL_MST_BILL_ITEM_ID in (10) then 'CHARITY'
-                    when BLL_MST_BILL_ITEM_ID in (14, 19) then 'INVESTMENT'
-                end as category,
+            (select DISTINCT bmbi.CATEGORY as category,
                 IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
                 DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
-                FROM ACC_INC_EXP
+                FROM ACC_INC_EXP aie
+                left join BLL_MST_BILL_ITEM bmbi ON bmbi.ID = aie.BLL_MST_BILL_ITEM_ID 
+				where bmbi.DEBET_CREDIT = 1
                 group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y"), category
                 order by ACCOUNT_DATE)
             as tabel1
             where category = '{row[0]}';""")
         result = list(cursor.fetchall())
         
-        if counter==6:
+        if row[0]=="MONTHLY-EXPENSE":
             data_chart.append(result[len_temp:len(data_chart[3])+1])   
-        elif counter==3:
+        elif row[0]=="FIXED-EXPENSE":
             len_temp = len(result) - len(result[-12:])
             data_chart.append(result[-12:])
         else:
@@ -106,7 +96,9 @@ def index(request):
         (239, 223, 72),
         (249, 165, 44),
         (214, 78, 18),
-        (300, 300, 100)
+        (300, 300, 100),
+        (50, 30, 100),
+        (30, 150, 100),
     ]
     color = color[:len(category)]
     final_data = zip(category, final_data, color)    
@@ -121,14 +113,19 @@ def index(request):
     for item in date:
         dateIn+="'"+item[0]+"',"
     dateIn = dateIn[:-1]
+    # print(dateIn)
     cursor.execute(
         f"""SELECT * FROM 
-        (select id,
+        (SELECT 
             SUM(AMOUNT_IN) REVENUE,
-            IFNULL(SUM(AMOUNT_OUT),0) EXPENSE,
+            IFNULL(SUM(AMOUNT_OUT),0) EXPENSE, 
             IFNULL((SUM(AMOUNT_IN) - SUM(AMOUNT_OUT)),0) as NET_PROFIT,
             DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
-            from ACC_INC_EXP 
+            from 
+            (select aie.* from ACC_INC_EXP aie
+                left join BLL_MST_BILL_ITEM bmbi ON bmbi .id = aie.BLL_MST_BILL_ITEM_ID 
+                AND bmbi.VALID_STATUS = 1
+                WHERE aie.BLL_MST_BILL_ITEM_ID not in (21, 18)) as t1 
             group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y")
             order by ACCOUNT_DATE)
         as tabel1
@@ -138,11 +135,14 @@ def index(request):
     cursor.execute(
         f"""SELECT * FROM 
             (
-                select 	id,
-                SUM(AMOUNT_OUT) EXPENSE,
-                DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
-                from ACC_INC_EXP 
-                WHERE BLL_MST_BILL_ITEM_ID IN (7,8,11,2,16,17)
+                select 	aie.id,
+                    SUM(AMOUNT_OUT) EXPENSE,
+                    DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
+                    from ACC_INC_EXP aie
+                    left join BLL_MST_BILL_ITEM bmbi on bmbi.id = aie.BLL_MST_BILL_ITEM_ID 
+                    WHERE bmbi.DEBET_CREDIT = 1
+                    and bmbi.VALID_STATUS = 1
+                    and bmbi.CATEGORY = 'MONTHLY-EXPENSE'
                 group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y")
                 order by ACCOUNT_DATE
             )
