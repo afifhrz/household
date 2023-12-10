@@ -27,13 +27,13 @@ def index(request):
     
     
     # data balance
-    data['month_sale']=acc_income_expense.objects.raw(f'''SELECT id, SUM(AMOUNT_IN) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID = 1 AND ACCOUNT_DATE >= "{date}"''')[0]
+    data['month_sale']=acc_income_expense.objects.raw(f'''SELECT id, IFNULL(SUM(AMOUNT_IN),0) - IFNULL(SUM(AMOUNT_OUT),0) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID IN (1,19) AND ACCOUNT_DATE >= "{date}"''')[0]
     data['profit_investment']=0
     data['month_expense']=acc_income_expense.objects.raw(f'''SELECT aie.id, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP aie
 	left join BLL_MST_BILL_ITEM bmbi ON bmbi .id = aie.BLL_MST_BILL_ITEM_ID 
 	WHERE bmbi.DEBET_CREDIT = 1
 	AND bmbi.VALID_STATUS = 1
-	AND bmbi.id <> 21 AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
+	AND bmbi.id NOT IN (19,21) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
     # print(date, enddate)
     data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT id, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
 
@@ -48,7 +48,25 @@ def index(request):
     data_chart = []
     counter = 0
     for row in category:
-        cursor.execute(
+        # if category got monthly-expense 
+        if row[0]=="MONTHLY-EXPENSE":
+            cursor.execute(
+            f"""SELECT * FROM
+            (select DISTINCT bmbi.CATEGORY as category,
+                IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
+                DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
+                FROM ACC_INC_EXP aie
+                left join BLL_MST_BILL_ITEM bmbi ON bmbi.ID = aie.BLL_MST_BILL_ITEM_ID 
+				where bmbi.DEBET_CREDIT = 1
+                and ACCOUNT_DATE >= '{date_filter}'
+                group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y"), category
+                order by ACCOUNT_DATE)
+            as tabel1
+            where category = '{row[0]}';""")
+            result = list(cursor.fetchall())
+            data_chart.append(result[:12])   
+        elif row[0]=="FIXED-EXPENSE":
+            cursor.execute(
             f"""SELECT * FROM
             (select DISTINCT bmbi.CATEGORY as category,
                 IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
@@ -60,19 +78,29 @@ def index(request):
                 order by ACCOUNT_DATE)
             as tabel1
             where category = '{row[0]}';""")
-        result = list(cursor.fetchall())
-        
-        if row[0]=="MONTHLY-EXPENSE":
-            data_chart.append(result[len_temp:len(data_chart[3])+1])   
-        elif row[0]=="FIXED-EXPENSE":
-            len_temp = len(result) - len(result[-12:])
+            result = list(cursor.fetchall())
             data_chart.append(result[-12:])
+            date_filter = result[-12][2].split("-")
+            date_filter = date_filter[1] + "-" + date_filter[0] + "-01"
         else:
+            cursor.execute(
+            f"""SELECT * FROM
+            (select DISTINCT bmbi.CATEGORY as category,
+                IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
+                DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
+                FROM ACC_INC_EXP aie
+                left join BLL_MST_BILL_ITEM bmbi ON bmbi.ID = aie.BLL_MST_BILL_ITEM_ID 
+				where bmbi.DEBET_CREDIT = 1
+                group by DATE_FORMAT(ACCOUNT_DATE, "%m-%Y"), category
+                order by ACCOUNT_DATE)
+            as tabel1
+            where category = '{row[0]}';""")
+            result = list(cursor.fetchall())
             data_chart.append(result[-12:])
             
         counter+=1
-    cursor.execute("""select DISTINCT DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' from ACC_INC_EXP order by ACCOUNT_DATE""")
-    date = list(cursor.fetchall())[len_temp:len(data_chart[3])+1]
+    cursor.execute(f"""select DISTINCT DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' from ACC_INC_EXP WHERE ACCOUNT_DATE >= '{date_filter}' order by ACCOUNT_DATE""")
+    date = list(cursor.fetchall())[:12]
     
     final_data = []
     for cat in data_chart:
