@@ -1,0 +1,130 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/auto/history/" method="post">{% csrf_token %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Maintainance Registration Form</h6>
+                <div class="row mb-3">
+                    <label for="inputVehicle" class="col-sm-3 col-form-label">Vehicle Name</label>
+                    <div class="col-sm-9">
+                        <select class="form-select" id="inputVehicle" name="inputVehicle" required=True>
+                            {% for option in data_vehicle %}
+                                <option value={{option.id}}>{{option.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3" id="ServiceName" style="display:none">
+                    <label for="inputServiceName" class="col-sm-3 serviceName col-form-label">Service Name</label>
+                    <div class="col-sm-9">
+                        <select class="form-select" id="inputServiceName" name="inputServiceName" required=True>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputLastKilometer" class="col-sm-3 col-form-label">Service Kilometer</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="inputLastKilometer" name="inputLastKilometer" step=100 required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputDate" class="col-sm-3 col-form-label">Service Date</label>
+                    <div class="col-sm-9">
+                        <input type="date" class="form-control" id="inputDate" name="inputDate" required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputPrice" class="col-sm-3 col-form-label">Price</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="inputPrice" name="inputPrice" step=5000 required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputNote" class="col-sm-3 col-form-label">Note</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="inputNote" name="inputNote" required=True>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button> 
+            </div>
+        </div>
+        </form>
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">History Maintainance</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Car Name</th>
+                            <th scope="col">Service Name</th>
+                            <th scope="col">Last Service Kilometer</th>
+                            <th scope="col">Last Service Date</th>
+                            <th scope="col">Next Service Kilometer</th>
+                            <th scope="col">Next Service Date</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_history %}
+                        {% if data.1 %}
+                        <tr class="bg-info text-dark">
+                        {% else %}
+                        <tr>
+                        {% endif %}
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.0.auto_mst_service_item_id.vehicle_id.name}}</td>
+                            <td>{{data.0.auto_mst_service_item_id.service_name}}</td>
+                            <td>{{data.0.last_service_kilometer}}</td>
+                            <td>{{data.0.last_service_date}}</td>
+                            <td>{{data.0.next_service_kilometer}}</td>
+                            <td>{{data.0.next_service_date}}</td>
+                            <td>{{data.0.price}}</td>
+                            <td>{{data.0.note}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+$('#inputVehicle').on("click", function() {
+    var vehicleId = $('#inputVehicle').find(":selected").val();
+    $.ajax({
+        url: '{% url "get_maintainance_item" 0 %}'.replace('0', vehicleId), 
+        type: 'GET',
+        success: function (data) {
+            var newOptions = {};    
+            for (var i=0; i < data.length; i++) {
+                var value = data[i].pk;
+                var key = data[i].fields.service_name;
+                newOptions[key] = value;
+            }
+            var $el = $('#inputServiceName');
+            $el.html(' ');
+            $.each(newOptions, function(key, value) {
+                $el.append($("<option></option>")
+                .attr("value", value).text(key));
+            });
+            $('#ServiceName').delay(500).slideDown('slow');
+        },
+        error: function () {
+            console.log('Error get data!');
+        }
+    });
+})
+</script>
+{% endblock script %}

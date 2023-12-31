@@ -121,7 +121,6 @@ def createexpense_view(request):
         'DINING OUT - VACATION':[12,20],
         'CHARITY':[10],
         'INVESTMENT':[14,19],
-        
     }
         
     dataexpense = acc_income_expense.objects.filter(account_date__gte=date, account_date__lte=date_2, bll_mst_item_id__in=typeDict.get(type)).order_by('-account_date')
