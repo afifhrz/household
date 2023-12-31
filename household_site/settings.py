@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'student',
     'account',
     'tradingstock',
+    'automotive',
 ]
 
 MIDDLEWARE = [

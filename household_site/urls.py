@@ -29,6 +29,7 @@ urlpatterns = [
     path('student/', include('student.urls')),
     path('account/', include('account.urls')),
     path('trading/', include('tradingstock.urls')),
+    path('auto/', include('automotive.urls')),
     path('login', views.login_page, name='login_page'),
     path('login_process', views.login_process, name='login_process'),
     path('logout', views.logout_process, name='logout_process'),

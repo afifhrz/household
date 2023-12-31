@@ -1,0 +1,107 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <form action="/auto/maintainance/" method="post">{% csrf_token %}
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">Maintainance Item Form</h6>
+                <div class="row mb-3">
+                    <label for="inputVehicle" class="col-sm-3 col-form-label">Vehicle Name</label>
+                    <div class="col-sm-9">
+                        <select class="form-select" id="inputVehicle" name="inputVehicle" required=True>
+                            {% for option in data_vehicle %}
+                                <option value={{option.id}}>{{option.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputServiceName" class="col-sm-3 col-form-label">Service Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="inputServiceName" required=True name="inputServiceName">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputRepeatingKilometer" class="col-sm-3 col-form-label">Repeating Kilometer</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="inputRepeatingKilometer" name="inputRepeatingKilometer" step=5000 required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputRepeatingMonths" class="col-sm-3 col-form-label">Repeating Months</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="inputRepeatingMonths" name="inputRepeatingMonths" step=1 required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputType" class="col-sm-3 col-form-label">Service Type</label>
+                    <div class="col-sm-9">
+                        <select class="form-select" id="inputType" name="inputType" required=True>
+                            <option value="adjust">Adjustment</option>
+                            <option value="replace">Replacement</option>
+                            <option value="inspect">Inspection</option>
+                        </select>
+                    </div>        
+                </div>
+                <div class="row mb-3">
+                    <label for="inputLastKilometer" class="col-sm-3 col-form-label">Last Service Kilometer</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="inputLastKilometer" name="inputLastKilometer" step=100 required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputDate" class="col-sm-3 col-form-label">Last Service Date</label>
+                    <div class="col-sm-9">
+                        <input type="date" class="form-control" id="inputDate" name="inputDate" required=True>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputPrice" class="col-sm-3 col-form-label">Estimate Price</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="inputPrice" name="inputPrice" step=5000 required=True>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button> 
+            </div>
+        </div>
+        </form>
+
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="mb-4">List Maintainance</h6>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Car Name</th>
+                            <th scope="col">Service Name</th>
+                            <th scope="col">Repeating Kilometer</th>
+                            <th scope="col">Repeating Months</th>
+                            <th scope="col">Service Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data_maintain %}
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td>{{data.vehicle_id.name}}</td>
+                            <td>{{data.service_name}}</td>
+                            <td>{{data.repeating_kilometer}}</td>
+                            <td>{{data.repeating_months}}</td>
+                            <td>{{data.service_type}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+</script>
+{% endblock content %}
