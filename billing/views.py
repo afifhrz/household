@@ -84,11 +84,16 @@ def liststatusbill_view(request):
     
     year = datetime.today().year
     month = datetime.today().month-1
+    if month == 0:
+        month = 12
+        year -= 1
+
     if len(str(month))==1:
         date = str(year)+"-0"+str(month)+"-"+"01"
     else:
         date = str(year)+"-"+str(month)+"-"+"01"
     total_day = calendar.monthrange(year, month)[1]
+
     enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
     
     data_unpaid_bill = bll_trx_billing.objects.raw("""SELECT btb.id, btb.INVOICE_DATE, btb.TOBE_PAID, btb.MONTH, btb.YEAR , sm.NAME, sm.BOOKED_PHONE  FROM BLL_TRX_BILLING btb 
