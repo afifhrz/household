@@ -301,12 +301,6 @@ def depoinvestment_view(request):
 
 @login_required(login_url='/login')
 def arliability_view(request):
-    
-    year = datetime.today().year
-    month = datetime.today().month-1
-    date = str(year)+"-"+str(month)+"-"+"01"
-    total_day = calendar.monthrange(year, month)[1]
-    
     data_ar = acc_ar_debt.objects.filter(account_type='AR', account_status='UNPAID', valid_status='VALID')
     data_li = acc_ar_debt.objects.filter(account_type='LIABILITY', account_status='UNPAID', valid_status='VALID')
     data_paid = acc_ar_debt.objects.filter(account_status='PAID', valid_status='VALID')
