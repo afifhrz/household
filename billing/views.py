@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 from account.models import acc_income_expense
 from student.models import std_mst, std_trx, std_trx_course
 from billing.models import bll_trx_billing, bll_trx_bill_item, bll_mst_bill_item
@@ -136,14 +136,14 @@ FROM STD_TRX_COURSE stc
         gender = "Mas"
     elif data[0].GENDER == "sist":
         gender = "Mbak"
-    
-    if datetime.now().hour < 9:
+    date_now = datetime.now() + timedelta(hours=7)
+    if date_now.hour < 9:
         suasana = "Pagi"
-    elif datetime.now().hour >= 9 and datetime.now().hour < 15:    
+    elif date_now.hour >= 9 and datetime.now().hour < 15:    
         suasana = "Siang"
-    elif datetime.now().hour >= 15 and datetime.now().hour < 18:    
+    elif date_now.hour >= 15 and datetime.now().hour < 18:    
         suasana = "Sore"
-    elif datetime.now().hour >= 18:    
+    elif date_now.hour >= 18:    
         suasana = "Malam"
 
     message = f"""Selamat {suasana} {gender} {name}, mohon maaf mengganggu waktunya.
@@ -156,7 +156,6 @@ Rekening tersedia a/n Ahmad Afif Aulia Hariz
 Bank Permata 4159142766
 Bank BRI 627301023198538
 Bank CIMB 762239366600
-Bank Sinarmas 0055573158
 Paypal https://www.paypal.com/paypalme/hrzpay (Please add 5% add-ons for admin fee!)
 
 Terimakasih"""
