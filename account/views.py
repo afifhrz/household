@@ -10,6 +10,8 @@ from billing.models import bll_mst_bill_item, bll_trx_bill_item
 import urllib
 import requests
 import json
+import os
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import numpy_financial as npf
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
