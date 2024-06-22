@@ -375,7 +375,7 @@ def saving_goal_tracker_view(request):
             exp_rtn = fund_data[0].exp_return
         else:
             fund_name = "Stock Investment"
-            curr_saving = acc_investment_stock.objects.raw("SELECT ID, SUM(LAST_PRICE*LOT) as FUND_VALUE FROM ACC_INVESTMENT_STOCK")[0].FUND_VALUE*100
+            curr_saving = acc_investment_stock.objects.raw("SELECT id, SUM(LAST_PRICE*LOT) as FUND_VALUE FROM ACC_INVESTMENT_STOCK")[0].FUND_VALUE*100
             exp_rtn = 0.15
         yearly_save = -1*npf.pmt(exp_rtn,data.period_in_year,0,int(data.final_saving_goal))
         

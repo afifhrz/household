@@ -120,7 +120,7 @@ def trading_engine(code, prev_data):
     conn = connection_builder(f"/v8/finance/chart/{code}.JK?interval=1d&range=1y")
     res = conn.getresponse()
     data = res.read()
-    logger.debug(f"trading_engine response data: {data}")
+    # logger.debug(f"trading_engine response data: {data}")
     data = json.loads(data.decode("utf-8"))
     summary_data = summary1(data)
     return check_signal_buy(summary_data, prev_data), summary_data
