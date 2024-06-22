@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
-from .engine_trading import trading_engine, get_data_prev
+from .engine_trading import trading_engine, get_data_prev, get2ydata
+from .test_engine import *
 from tradingstock.models import trd_mst_stock, trd_filtered_stock, trd_trx_stock
 from django.http import HttpResponse, HttpResponseRedirect
 import json
@@ -9,6 +10,10 @@ from datetime import datetime, date, time
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 from django.views.decorators.csrf import csrf_protect
+import logging
+import random
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 def run_filter(request):
@@ -20,7 +25,6 @@ def run_filter(request):
     response_data = {}
     pub_date = date.today()
     min_pub_date_time = datetime.combine(pub_date, time.min) 
-    
     for data in datamst:
         response_data[data.stock_code] = {}
         
@@ -31,11 +35,14 @@ def run_filter(request):
             public_date = datetime.combine(public_date, time.min) - relativedelta(hours=7)
             epoch = int(tm.mktime(public_date.timetuple()))
             prev_data = get_data_prev(data.stock_code, epoch)
+            tm.sleep(0.1)
         else:
             prev_data = prev_data[0]
             prev_data = model_to_dict(prev_data)
+        logger.debug(f"This is prev data: {prev_data}")
         
         response_data[data.stock_code]['status'],response_data[data.stock_code]['summary'] = trading_engine(data.stock_code, prev_data)
+        tm.sleep(0.1)
         new_data = trd_filtered_stock.objects.create(
             mst_id = data,
             date_modified = datetime.today(),
@@ -80,6 +87,54 @@ def last_filter(request):
         response_data[data.mst_id.stock_code]['date_modified'] = response_data[data.mst_id.stock_code]['date_modified'].strftime("%Y-%m-%d %H:%M:%S")
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+def test_engine(request):
+    # get query string
+    stock_code = request.GET.get('stockCode',None)
+    datamst = trd_mst_stock.objects.filter(valid_status=1).order_by('stock_code')
+    if stock_code == None:
+        stock = random.choice(datamst)
+        stock_code = stock.stock_code
+    data = get2ydata(stock_code)
+    
+    dataCloseRaw = data['chart']['result'][0]['indicators']['quote'][0]['close']
+    dataOpenRaw = data['chart']['result'][0]['indicators']['quote'][0]['open']
+    timestamp = data['chart']['result'][0]['timestamp']
+
+    result = main_test_engine(stock_code, dataCloseRaw, dataOpenRaw, timestamp)
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
+def test_engine_many(request):
+    # get query string
+    count = int(request.GET.get('count',10))
+    details = []
+    sum_percentage = 0
+    sum_amount = 0
+
+    for i in range(count):
+        datamst = trd_mst_stock.objects.filter(valid_status=1).order_by('stock_code')
+        stock = random.choice(datamst)
+        stock_code = stock.stock_code
+        data = get2ydata(stock_code)
+        
+        dataCloseRaw = data['chart']['result'][0]['indicators']['quote'][0]['close']
+        dataOpenRaw = data['chart']['result'][0]['indicators']['quote'][0]['open']
+        timestamp = data['chart']['result'][0]['timestamp']
+
+        result = main_test_engine(stock_code, dataCloseRaw, dataOpenRaw, timestamp)
+        details.append(result)
+        sum_percentage += result['gain/loss']
+        sum_amount += result["startbalance"] * result['gain/loss']
+        tm.sleep(0.5)
+    
+    result = {
+        "count": count,
+        "gain-loss-percentage": sum_percentage,
+        "gain-loss-amount": sum_amount,
+        "details": details
+    }
+
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 @csrf_protect
 def createtransactionstock(request):
