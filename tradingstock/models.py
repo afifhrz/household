@@ -8,6 +8,8 @@ class trd_mst_stock(models.Model):
     date_modified = models.DateTimeField(default=timezone.now, db_column="MODIFIED_DATE")
     stock_code = models.CharField(max_length=30, db_column="CODE") 
     valid_status = models.BooleanField(db_column="VALID_STATUS")
+    owned = models.BooleanField(db_column="OWNED", default=False)
+    buy_price = models.IntegerField(db_column="BUY_PRICE", default=0, null=True, blank=True)
 
     class Meta:
         db_table = 'TRD_MST_STOCK'
