@@ -1,8 +1,10 @@
 import requests
+import os
 
 class Tele():
     def __init__(self):
-        self.baseurl = "https://api.telegram.org/bot7453140768:AAFIKzbCcnVOagPa6Ja3anQlTaAdoNR-eu4/sendMessage"
+        tele_token = os.environ['TELE_TOKEN']
+        self.baseurl = f"https://api.telegram.org/bot{tele_token}/sendMessage"
         self.body = {}
 
     async def sendMessage(self, text):
@@ -11,6 +13,6 @@ class Tele():
             self.body['text'] = "<pre>\n"+text+"\n</pre>"
             self.body['parse_mode'] = "html"
             response = requests.post(self.baseurl, json = self.body)
-            print(response.text)
+            # print(response.text)
         except Exception as e:
             raise e
