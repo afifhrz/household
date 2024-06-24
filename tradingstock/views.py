@@ -12,11 +12,15 @@ from dateutil.relativedelta import relativedelta
 from django.views.decorators.csrf import csrf_protect
 import logging
 import random
+import asyncio
+from .tele import Tele
 
 logger = logging.getLogger(__name__)
 
 # Create your views here.
 def run_filter(request):
+    if date.today().strftime("%A") == "Saturday" or date.today().strftime("%A") == "Friday":
+        return HttpResponse(json.dumps({}), content_type="application/json")
     datamst = trd_mst_stock.objects.filter(valid_status=1).order_by('stock_code')
     # response_data = trd_filtered_stock.objects.filter(mst_id=datamst[0]).order_by('-date_modified')[0]
     # dict_obj = model_to_dict( response_data )
@@ -39,9 +43,9 @@ def run_filter(request):
         else:
             prev_data = prev_data[0]
             prev_data = model_to_dict(prev_data)
-        logger.debug(f"This is prev data: {prev_data}")
+        # logger.debug(f"This is prev data: {prev_data}")
         
-        response_data[data.stock_code]['status'],response_data[data.stock_code]['summary'] = trading_engine(data.stock_code, prev_data)
+        response_data[data.stock_code]['status'],response_data[data.stock_code]['summary'] = trading_engine(data.stock_code, prev_data, data.owned, data.buy_price)
         tm.sleep(0.1)
         new_data = trd_filtered_stock.objects.create(
             mst_id = data,
@@ -50,9 +54,9 @@ def run_filter(request):
             last_open = response_data[data.stock_code]['summary']['last_open'],
             ma_d_3 = response_data[data.stock_code]['summary']['ma_d_3'],
             ma_d_5 = response_data[data.stock_code]['summary']['ma_d_5'],
-            ma_d_7 = response_data[data.stock_code]['summary']['ma_d_7'],
-            ma_d_10 = response_data[data.stock_code]['summary']['ma_d_10'],
-            ma_d_14 = response_data[data.stock_code]['summary']['ma_d_14'],
+            ma_d_7 = response_data[data.stock_code]['summary']['ma_d_8'],
+            ma_d_10 = response_data[data.stock_code]['summary']['ma_d_13'],
+            ma_d_14 = response_data[data.stock_code]['summary']['ma_d_13'],
             ma_d_18 = response_data[data.stock_code]['summary']['ma_d_18'],
             ma_d_50 = response_data[data.stock_code]['summary']['ma_d_50'],
             ma_d_100 = response_data[data.stock_code]['summary']['ma_d_100'],
@@ -62,6 +66,20 @@ def run_filter(request):
         new_data.save()
         
         tm.sleep(0.5)
+
+    teleResponse = {"datetime":str(date.today())}
+    for key in response_data:
+        if response_data[key]["status"] == "THEONE" or \
+            response_data[key]["status"] == "SELL_TAKEPROFIT_CROSS" or \
+                response_data[key]["status"] == "SELL_CUTLOSS" or \
+                    response_data[key]["status"] == "SELL_TAKEPROFIT":
+                        teleResponse[key] = response_data[key]
+            
+    oke = Tele()
+    try:
+        asyncio.run(oke.sendMessage(json.dumps(teleResponse, indent=4)))
+    except Exception as e:
+        print(e)
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def last_filter(request):
@@ -85,6 +103,20 @@ def last_filter(request):
     for data in datafilter:
         response_data[data.mst_id.stock_code] =  model_to_dict(data)
         response_data[data.mst_id.stock_code]['date_modified'] = response_data[data.mst_id.stock_code]['date_modified'].strftime("%Y-%m-%d %H:%M:%S")
+    
+    teleResponse = {"datetime":str(date.today())}
+    for key in response_data:
+        if response_data[key]["status"] == "THEONE" or \
+            response_data[key]["status"] == "SELL_TAKEPROFIT_CROSS" or \
+                response_data[key]["status"] == "SELL_CUTLOSS" or \
+                    response_data[key]["status"] == "SELL_TAKEPROFIT":
+                        teleResponse[key] = response_data[key]
+            
+    oke = Tele()
+    try:
+        asyncio.run(oke.sendMessage(json.dumps(teleResponse, indent=4)))
+    except Exception as e:
+        print(e)
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -139,19 +171,26 @@ def test_engine_many(request):
 @csrf_protect
 def createtransactionstock(request):
     if request.method == "POST":
+        mst = trd_mst_stock(id=request.POST['inputStockId'])
+
         if request.POST['InputConditionTransaction'] == "sell":
             amount = float(request.POST['inputAmount'])*0.9971
+            mst.buy_price = 0
+            mst.owned = False
         else:
             amount = float(request.POST['inputAmount'])*-1*1.0019
-            
-        mst = trd_mst_stock(id=request.POST['inputStockId'])
-        trx =trd_trx_stock(
+            mst.buy_price = request.POST['inputPrice']
+            mst.owned = True
+        
+        trx = trd_trx_stock(
             mst_id = mst,
             lot = request.POST['inputLot'],
             price = request.POST['inputPrice'],
             amount = amount,
         )
         trx.save()
+        mst.save(force_update=True)
+        
         return HttpResponseRedirect(reverse('createtransactionstock'))
     datamst = trd_mst_stock.objects.all()
     datatrading = trd_trx_stock.objects.all()

@@ -110,20 +110,15 @@ def check_signal_buy(data, prev_data, owned=False, buy_price = 1):
         return "UPTREND"
     elif data['last_price'] < prev_data['last_open']:
         return "DOWNTREND"
-    
-    if owned:
-        pass  
-    # SIGNAL SELL_TAKEPROFIT_14 -> SELL IF GAIN 14%
-    # SIGNAL SELL_CUTTING_LOSS -> SELL IF LOSS 3%
 
-def trading_engine(code, prev_data):
+def trading_engine(code, prev_data, owned=False, buy_price = 1):
     conn = connection_builder(f"/v8/finance/chart/{code}.JK?interval=1d&range=1y")
     res = conn.getresponse()
     data = res.read()
     # logger.debug(f"trading_engine response data: {data}")
     data = json.loads(data.decode("utf-8"))
     summary_data = summary1(data)
-    return check_signal_buy(summary_data, prev_data), summary_data
+    return check_signal_buy(summary_data, prev_data, owned, buy_price), summary_data
 
 def get_data_prev(code, epoch):
     conn = connection_builder(f"/v8/finance/chart/{code}.JK?interval=1d&period2={epoch}")
