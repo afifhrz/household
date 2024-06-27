@@ -189,7 +189,7 @@ def createtransactionstock(request):
             amount = amount,
         )
         trx.save()
-        mst.save(force_update=True)
+        mst.save(update_fields=["buy_price", "owned"])
         
         return HttpResponseRedirect(reverse('createtransactionstock'))
     datamst = trd_mst_stock.objects.all()
