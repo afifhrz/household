@@ -2,8 +2,13 @@
 import json
 import http.client
 import logging
+from statistics import mean
+import traceback
+from .tele import Tele
+import asyncio
 
 logger = logging.getLogger(__name__)
+teleEngine = Tele()
 
 def connection_builder(url_link):
     conn = http.client.HTTPSConnection("query1.finance.yahoo.com")
@@ -35,23 +40,32 @@ def summary(daily, weekly, monthly):
     return result
 
 def summary1(daily, previousOpen = None, test = False):
-    result = {}
+    try:
+        result = {}
 
-    if not test:
-        closing_all_daily = daily['chart']['result'][0]['indicators']['quote'][0]['close']
-        result['last_open'] = daily['chart']['result'][0]['indicators']['quote'][0]['open'][-1]
-    else:
-        closing_all_daily = daily
-        result['last_open'] = previousOpen[-1]
+        if not test:
+            closing_all_daily = daily['chart']['result'][0]['indicators']['quote'][0]['close']
+            result['last_open'] = daily['chart']['result'][0]['indicators']['quote'][0]['open'][-1] if not daily['chart']['result'][0]['indicators']['quote'][0]['open'][-1] == None else 1
+        else:
+            closing_all_daily = daily
+            result['last_open'] = previousOpen[-1] if not previousOpen[-1] == None else 1
 
-    
-    result['last_price'] = closing_all_daily[-1] 
-    daily_len = [3,5,8,13,18,50,100,200]
-    
-    for i in daily_len:
-        result["ma_d_"+str(i)] = int(sum(closing_all_daily[-1*i:])/len(closing_all_daily[-1*i:]))
-    
-    return result
+        result['last_price'] = closing_all_daily[-1] if not closing_all_daily[-1] == None else 1
+        daily_len = [3,5,8,13,18,50,100,200]
+        
+        for i in daily_len:
+            result["ma_d_"+str(i)] = int(mean(d for d in closing_all_daily[-1*i:] if d is not None))
+        return result
+    except Exception as e:
+        symbol = daily['chart']['result'][0]['meta']['symbol']
+        errMsg = f"summary1.enginetrading Error: {e}\nTraceback: {traceback.format_exc()}\nData Symbol: {symbol}"
+        teleResponse = {
+            "Error": type(e).__name__,
+            "Traceback": traceback.format_exc(),
+            "Symbol": symbol
+        }
+        asyncio.run(teleEngine.sendMessage(json.dumps(teleResponse, indent=4)))
+        logger.error(errMsg)
 
 def check_signal_buy(data, prev_data, owned=False, buy_price = 1):
     CLOSE_PERCENTAGE_MA100_200_CONSTANT = 0.025

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone as tz
 from .engine_trading import trading_engine, get_data_prev, get2ydata
 from .test_engine import *
 from tradingstock.models import trd_mst_stock, trd_filtered_stock, trd_trx_stock
@@ -19,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 def run_filter(request):
-    if date.today().strftime("%A") == "Saturday" or date.today().strftime("%A") == "Friday":
-        return HttpResponse(json.dumps({}), content_type="application/json")
+    # if date.today().strftime("%A") == "Saturday" or date.today().strftime("%A") == "Friday":
+    #     return HttpResponse(json.dumps({}), content_type="application/json")
     datamst = trd_mst_stock.objects.filter(valid_status=1).order_by('stock_code')
     # response_data = trd_filtered_stock.objects.filter(mst_id=datamst[0]).order_by('-date_modified')[0]
     # dict_obj = model_to_dict( response_data )
@@ -49,7 +50,7 @@ def run_filter(request):
         tm.sleep(0.1)
         new_data = trd_filtered_stock.objects.create(
             mst_id = data,
-            date_modified = datetime.today(),
+            date_modified = tz.now(),
             last_price = response_data[data.stock_code]['summary']['last_price'],
             last_open = response_data[data.stock_code]['summary']['last_open'],
             ma_d_3 = response_data[data.stock_code]['summary']['ma_d_3'],
