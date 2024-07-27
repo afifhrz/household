@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 def run_filter(request):
-    # if date.today().strftime("%A") == "Saturday" or date.today().strftime("%A") == "Friday":
-    #     return HttpResponse(json.dumps({}), content_type="application/json")
+    if date.today().strftime("%A") == "Saturday" or date.today().strftime("%A") == "Friday":
+        return HttpResponse(json.dumps({}), content_type="application/json")
     datamst = trd_mst_stock.objects.filter(valid_status=1).order_by('stock_code')
     # response_data = trd_filtered_stock.objects.filter(mst_id=datamst[0]).order_by('-date_modified')[0]
     # dict_obj = model_to_dict( response_data )
