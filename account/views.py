@@ -259,11 +259,11 @@ def fundinvestment_view(request):
         #m_value
         if data.pk == 2:
             temp_val = float(data.unit) * float(data.current_nav)
-            titipan_bune = 20000000+((float(data.current_nav)-1224.21)*16337.0663)
+            titipan_bune = 10000000+((float(data.current_nav)-1224.21)*8937.0663)
             m_value.append(round(temp_val-titipan_bune,2))
             gain_loss.append(
                 round(
-                    (temp_val-titipan_bune)-(float(data.average_nav)*(float(data.unit)-16337.0663)),2
+                    (temp_val-titipan_bune)-(float(data.average_nav)*(float(data.unit)-8937.0663)),2
                         )
                              )
         else:
@@ -278,7 +278,7 @@ def fundinvestment_view(request):
         'title':'H - Expense',
         'dashboard_active':'Account',
         'datafund':list(data_fund),
-        'datareksa_ibu':[16337.0663,round(titipan_bune,2),round(titipan_bune-20000000,2)],
+        'datareksa_ibu':[8937.0663,round(titipan_bune,2),round(titipan_bune-10000000,2)],
         }
     return render(request, 'account/fundinvestment_view.html', context)
 
