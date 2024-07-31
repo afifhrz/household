@@ -207,7 +207,7 @@ def index(request):
     asset['stock_inv'] = total_price
     asset['stock_percentage'] = (asset['stock_inv']-float(avg_price))/float(avg_price)*100
 
-    asset['fund_inv'] = acc_investment_fund.objects.raw("SELECT id, round(SUM(CURRENT_NAV*UNIT)-(select (20000000 + (CURRENT_NAV-1224.21) * 16337.0663) from ACC_INVESTMENT_FUND aif where id = 2),2) total_fund from ACC_INVESTMENT_FUND aif")[0]
+    asset['fund_inv'] = acc_investment_fund.objects.raw("SELECT id, round(SUM(CURRENT_NAV*UNIT)-(select (10000000 + (CURRENT_NAV-1224.21) * 8937.0663) from ACC_INVESTMENT_FUND aif where id = 2),2) total_fund from ACC_INVESTMENT_FUND aif")[0]
     # https://data-asg.goldprice.org/GetData/IDR-XAU/1
     url = "https://data-asg.goldprice.org/dbXRates/IDR"
     req = urllib.request.Request(url)
