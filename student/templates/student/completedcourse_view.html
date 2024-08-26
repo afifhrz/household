@@ -74,9 +74,11 @@
     <script>
         $(document).on("click", ".open-Cancel{{data.id}}", function () {
             var $ids =  $('#buttonCancel{{data.id}}').val();
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             $.ajax({
-                type: "GET",
-                url: "http://{{ request.get_host }}/student/canceledcourse/"+$ids,
+                type: "POST",
+                headers: {'X-CSRFToken': csrftoken},
+                url: "/student/canceledcourse/"+$ids+"/",
                 success:function(data){
                     window.location.reload();
                 }

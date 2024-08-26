@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from datetime import datetime
 
 # Create your models here.
         
@@ -40,6 +39,7 @@ class trd_trx_stock(models.Model):
     lot = models.IntegerField(db_column="LOT")
     price = models.IntegerField(db_column="PRICE", default="", null=True, blank=True)
     amount = models.FloatField(db_column="AMOUNT")
+    is_last_transaction = models.BooleanField(db_column="IS_LAST_TRANSACTION", default=False)
 
     class Meta:
         db_table = 'TRD_TRX_STOCK'
