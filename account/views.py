@@ -136,29 +136,32 @@ def createexpense_view(request):
         }
     return render(request, 'account/createexpense_view.html', context)
 
+def inputNewInvestmentStock(stockCode, stockLot, averagePrice):
+    data_stock = acc_investment_stock.objects.filter(stock_code=stockCode)
+    if data_stock:
+        new_amount = data_stock[0].lot + int(stockLot)
+        if new_amount == 0:
+            data_stock.delete()
+        else:
+            data_stock.update(lot=new_amount, average = averagePrice)
+    else:
+        new = acc_investment_stock(
+            stock_code = stockCode,
+            lot = stockLot,
+            average = averagePrice,
+            last_price = int(float(averagePrice)),
+            der_annual = 0,
+            bv_5 = 1,
+            bv_annual = 1,
+            dividend = 0
+            )
+        new.save()
+
 @csrf_protect
 @login_required(login_url='/login')
 def stockinvestment_view(request):
     if request.method == 'POST':
-        data_stock = acc_investment_stock.objects.filter(stock_code=request.POST['inputNameStock'])
-        if data_stock:
-            new_amount = data_stock[0].lot + int(request.POST['inputLot'])
-            if new_amount == 0:
-                data_stock.delete()
-            else:
-                data_stock.update(lot=new_amount, average = request.POST['inputAverage'])
-        else:
-            new = acc_investment_stock(
-                stock_code = request.POST['inputNameStock'],
-                lot = request.POST['inputLot'],
-                average = request.POST['inputAverage'],
-                last_price = int(float(request.POST['inputAverage'])),
-                der_annual = 0,
-                bv_5 = 1,
-                bv_annual = 1,
-                dividend = 0
-                )
-            new.save()
+        inputNewInvestmentStock(request.POST['inputNameStock'], request.POST['inputLot'], request.POST['inputAverage'])
         return HttpResponseRedirect(reverse('stockinvestment'))
     datastock = acc_investment_stock.objects.all()
     current_price = []

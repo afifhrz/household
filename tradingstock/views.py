@@ -4,6 +4,7 @@ from django.utils import timezone as tz
 from .engine_trading import trading_engine, get_data_prev, get2ydata
 from .test_engine import *
 from tradingstock.models import trd_mst_stock, trd_filtered_stock, trd_trx_stock
+from account.views import inputNewInvestmentStock
 from django.http import HttpResponse, HttpResponseRedirect
 import json
 import time as tm
@@ -11,6 +12,7 @@ from datetime import datetime, date, time
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 import logging
 import random
 import asyncio
@@ -170,41 +172,61 @@ def test_engine_many(request):
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 @csrf_protect
+@login_required(login_url='/login')
 def createtransactionstock(request):
     if request.method == "POST":
         mst = trd_mst_stock(id=request.POST['inputStockId'])
 
         if request.POST['InputConditionTransaction'] == "sell":
             amount = float(request.POST['inputAmount'])*0.9971
+            inputLot = request.POST['inputLot']*-1
             mst.buy_price = 0
             mst.owned = False
         else:
             amount = float(request.POST['inputAmount'])*-1*1.0019
             mst.buy_price = request.POST['inputPrice']
             mst.owned = True
+            inputLot = request.POST['inputLot']
         
         trx = trd_trx_stock(
             mst_id = mst,
             lot = request.POST['inputLot'],
             price = request.POST['inputPrice'],
             amount = amount,
+            is_last_transaction = mst.owned
         )
         trx.save()
         mst.save(update_fields=["buy_price", "owned"])
+        inputNewInvestmentStock(mst.stock_code, inputLot, request.POST['averagePrice'])
         
         return HttpResponseRedirect(reverse('createtransactionstock'))
     datamst = trd_mst_stock.objects.all()
     datatrading = trd_trx_stock.objects.all()
+    currenttrading = trd_mst_stock.objects.raw("""
+        SELECT tms.id, CODE, trs.LOT, trs.PRICE, trs.AMOUNT, ais.LAST_PRICE
+            FROM TRD_MST_STOCK as tms
+            LEFT JOIN TRD_TRX_STOCK as trs on trs.TRD_MST_STOCK = tms.id
+            LEFT JOIN ACC_INVESTMENT_STOCK ais on ais.STOCKS = tms.CODE
+            WHERE tms.OWNED = 1
+            AND trs.IS_LAST_TRANSACTION = 1
+    """)
     summary = 0
     for data in datatrading:
         summary+=data.amount
-    summary = int(summary)    
+    summary = int(summary)
+
+    unrealize_gain_loss = 0
+    for data in currenttrading:
+        unrealize_gain_loss+=data.LAST_PRICE*data.LOT*100
+    unrealize_gain_loss = unrealize_gain_loss + summary
     
     context = {
-        'title':'H - Trading Info',
+        'title':'H - Create Trading Transaction',
         'dashboard_active':'Trading',
         'datamst':datamst,
         'datatrading':datatrading,
-        'summary':summary
+        'summary':summary,
+        'unrealize_gain_loss':unrealize_gain_loss,
+        'currenttrading':currenttrading
         }
     return render(request, 'tradingstock/createtransactionstock_view.html', context)
