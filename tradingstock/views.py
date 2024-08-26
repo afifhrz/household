@@ -175,18 +175,21 @@ def test_engine_many(request):
 @login_required(login_url='/login')
 def createtransactionstock(request):
     if request.method == "POST":
-        mst = trd_mst_stock(id=request.POST['inputStockId'])
+        mst = trd_mst_stock.objects.get(id=request.POST['inputStockId'])
 
         if request.POST['InputConditionTransaction'] == "sell":
             amount = float(request.POST['inputAmount'])*0.9971
-            inputLot = request.POST['inputLot']*-1
+            inputLot = int(request.POST['inputLot'])*-1
             mst.buy_price = 0
             mst.owned = False
+            old_trx = trd_trx_stock.objects.get(mst_id = request.POST['inputStockId'], is_last_transaction = True)
+            old_trx.is_last_transaction = False
+            old_trx.save()
         else:
             amount = float(request.POST['inputAmount'])*-1*1.0019
             mst.buy_price = request.POST['inputPrice']
             mst.owned = True
-            inputLot = request.POST['inputLot']
+            inputLot = int(request.POST['inputLot'])
         
         trx = trd_trx_stock(
             mst_id = mst,
@@ -196,9 +199,9 @@ def createtransactionstock(request):
             is_last_transaction = mst.owned
         )
         trx.save()
-        mst.save(update_fields=["buy_price", "owned"])
         inputNewInvestmentStock(mst.stock_code, inputLot, request.POST['averagePrice'])
-        
+        mst.save(update_fields=["buy_price", "owned"])
+
         return HttpResponseRedirect(reverse('createtransactionstock'))
     datamst = trd_mst_stock.objects.all()
     datatrading = trd_trx_stock.objects.all()
