@@ -211,7 +211,7 @@ def index(request):
     # https://data-asg.goldprice.org/GetData/IDR-XAU/1
     url = "https://data-asg.goldprice.org/dbXRates/IDR"
     req = urllib.request.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7')
+    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
     
     try:    
         response = urllib.request.urlopen(req)
