@@ -8,41 +8,72 @@ from account.models import acc_income_expense, acc_investment_stock, acc_investm
 from django.db import connection
 from django.contrib.auth.decorators import login_required
 
+def get_query_date(month, year):
+    total_day = calendar.monthrange(year, month)[1]
+    if len(str(month)) < 2:
+        startDate = str(year)+"-"+'0'+str(month)+"-"+"01"
+        endDate = str(year)+"-"+'0'+str(month)+"-"+ str(total_day)
+    else:
+        startDate = str(year)+"-"+str(month)+"-"+"01"
+        endDate = str(year)+"-"+str(month)+"-"+ str(total_day)
+    return startDate, endDate
+
+def get_gold_info():
+    url = "https://data-asg.goldprice.org/dbXRates/IDR"
+    req = urllib.request.Request(url)
+    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
+    
+    try:    
+        response = urllib.request.urlopen(req)
+        res = response.read()      # a `bytes` object
+        html = json.loads(res)
+    except UnicodeDecodeError:
+        response = urllib.request.urlopen(req)
+        res = response.read()      # a `bytes` object
+        html = json.loads(res)
+    return html
 
 # Create your views here.
 @login_required(login_url='/login')
 def index(request):
-
     month_of_emergency = 3
     data = {}
     year = datetime.datetime.today().year
     month = datetime.datetime.today().month
-    total_day = calendar.monthrange(year, month)[1]
-    if len(str(month)) < 2:
-        date = str(year)+"-"+'0'+str(month)+"-"+"01"
-        enddate = str(year)+"-"+'0'+str(month)+"-"+ str(total_day)
-    else:
-        date = str(year)+"-"+str(month)+"-"+"01"
-        enddate = str(year)+"-"+str(month)+"-"+ str(total_day)
-    
+    startDate, endDate = get_query_date(month, year)
     
     # data balance
-    data['month_sale']=acc_income_expense.objects.raw(f'''SELECT id, IFNULL(SUM(AMOUNT_IN),0) - IFNULL(SUM(AMOUNT_OUT),0) MONTH_SALE FROM ACC_INC_EXP WHERE BLL_MST_BILL_ITEM_ID IN (1,19) AND ACCOUNT_DATE >= "{date}"''')[0]
+    data['month_sale']=acc_income_expense.objects.raw(
+        f'''SELECT id, IFNULL(SUM(AMOUNT_IN),0) - IFNULL(SUM(AMOUNT_OUT),0) MONTH_SALE 
+                FROM ACC_INC_EXP 
+                WHERE BLL_MST_BILL_ITEM_ID IN (1,19) 
+                AND ACCOUNT_DATE >= "{startDate}"'''
+                )[0]
     data['profit_investment']=0
-    data['month_expense']=acc_income_expense.objects.raw(f'''SELECT aie.id, SUM(AMOUNT_OUT) MONTH_EXPENSE FROM ACC_INC_EXP aie
-	left join BLL_MST_BILL_ITEM bmbi ON bmbi .id = aie.BLL_MST_BILL_ITEM_ID 
-	WHERE bmbi.DEBET_CREDIT = 1
-	AND bmbi.VALID_STATUS = 1
-	AND bmbi.id NOT IN (19,21) AND ACCOUNT_DATE >= "{date}" AND ACCOUNT_DATE <= "{enddate} 23:59:59"''')[0]
-    # print(date, enddate)
-    data['overall_balance']=acc_income_expense.objects.raw(f'''SELECT id, OVERALL_BALANCE FROM ACC_INC_EXP ORDER BY id desc LIMIT 1''')[0]
+    data['month_expense']=acc_income_expense.objects.raw(
+        f'''SELECT aie.id, SUM(AMOUNT_OUT) MONTH_EXPENSE 
+                FROM ACC_INC_EXP aie
+	            LEFT JOIN BLL_MST_BILL_ITEM bmbi ON bmbi .id = aie.BLL_MST_BILL_ITEM_ID 
+                WHERE bmbi.DEBET_CREDIT = 1
+                AND bmbi.VALID_STATUS = 1
+                AND bmbi.id NOT IN (19,21) 
+                AND ACCOUNT_DATE >= "{startDate}" 
+                AND ACCOUNT_DATE <= "{endDate} 23:59:59"'''
+                )[0]
+    data['overall_balance']=acc_income_expense.objects.raw(
+        f'''SELECT id, OVERALL_BALANCE 
+                FROM ACC_INC_EXP 
+                ORDER BY id DESC LIMIT 1'''
+                )[0]
 
     # data expense chart
     cursor = connection.cursor()
-    cursor.execute("""select DISTINCT bmbi.CATEGORY as category from ACC_INC_EXP aie
-	left join BLL_MST_BILL_ITEM bmbi ON bmbi.ID = aie.BLL_MST_BILL_ITEM_ID 
-	where bmbi.DEBET_CREDIT = 1
-	order by category """)
+    cursor.execute(
+        """SELECT DISTINCT bmbi.CATEGORY AS category 
+            FROM ACC_INC_EXP aie
+	        LEFT JOIN BLL_MST_BILL_ITEM bmbi ON bmbi.ID = aie.BLL_MST_BILL_ITEM_ID 
+            WHERE bmbi.DEBET_CREDIT = 1
+            ORDER BY category """)
     category = list(cursor.fetchall())
     
     data_chart = []
@@ -52,7 +83,7 @@ def index(request):
         if row[0]=="MONTHLY-EXPENSE":
             cursor.execute(
             f"""SELECT * FROM
-            (select DISTINCT bmbi.CATEGORY as category,
+            (SELECT DISTINCT bmbi.CATEGORY as category,
                 IFNULL(SUM(AMOUNT_OUT),0) as AMOUNT,
                 DATE_FORMAT(ACCOUNT_DATE, "%m-%Y") as 'month_year' 
                 FROM ACC_INC_EXP aie
@@ -207,25 +238,24 @@ def index(request):
     asset['stock_inv'] = total_price
     asset['stock_percentage'] = (asset['stock_inv']-float(avg_price))/float(avg_price)*100
 
-    asset['fund_inv'] = acc_investment_fund.objects.raw("SELECT id, round(SUM(CURRENT_NAV*UNIT)-(select (10000000 + (CURRENT_NAV-1224.21) * 8937.0663) from ACC_INVESTMENT_FUND aif where id = 2),2) total_fund from ACC_INVESTMENT_FUND aif")[0]
-    # https://data-asg.goldprice.org/GetData/IDR-XAU/1
-    url = "https://data-asg.goldprice.org/dbXRates/IDR"
-    req = urllib.request.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
+    asset['fund_inv'] = acc_investment_fund.objects.raw(
+        """SELECT id, round(
+            SUM(CURRENT_NAV*UNIT)-
+            (
+                (SELECT CURRENT_NAV * 8937.0663
+                    FROM ACC_INVESTMENT_FUND aif WHERE id = 2) +
+                (SELECT CURRENT_NAV * 2116.3145
+                    FROM ACC_INVESTMENT_FUND aif WHERE id = 7)
+            )    
+            ,2) total_fund FROM ACC_INVESTMENT_FUND aif""")[0]
     
-    try:    
-        response = urllib.request.urlopen(req)
-        res = response.read()      # a `bytes` object
-        html = json.loads(res)
-    except UnicodeDecodeError:
-        response = urllib.request.urlopen(req)
-        res = response.read()      # a `bytes` object
-        html = json.loads(res)
-    
+    html = get_gold_info()
+    gold_gram_owned = 7
+    gold_avg_price = 995142
+    gold_asset_owned_base_price = gold_gram_owned*gold_avg_price
     gold_price = html['items'][0]['xauPrice']    
-    asset['gold_inv'] = round(gold_price/31.06778927*5,2)
-
-    asset['gold_percentage'] = round((asset['gold_inv']-5*800000)/(5*800000)*100,2)    
+    asset['gold_inv'] = round(gold_price/31.06778927*gold_gram_owned,2)
+    asset['gold_percentage'] = round((asset['gold_inv']-gold_asset_owned_base_price)/(gold_asset_owned_base_price)*100,2)    
     asset['total_asset'] = float(total_cash) + float(asset['fund_inv'].total_fund) + asset['stock_inv'] + asset['gold_inv']
     
     modal = acc_investment_deposit.objects.raw("select id, sum(amount) as total_modal from ACC_INVESTMENT_DEPOSIT")[0]
