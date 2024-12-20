@@ -33,6 +33,19 @@ def get_gold_info():
         html = json.loads(res)
     return html
 
+def get_fund_inv():
+    total_fund = acc_investment_fund.objects.raw(
+        """SELECT id, round(SUM(CURRENT_NAV*UNIT),2) total_fund 
+            FROM ACC_INVESTMENT_FUND aif""")[0]
+    mother_first_fund = acc_investment_fund.objects.raw(
+        """SELECT id, round(SUM(CURRENT_NAV * 8937.0663),2) mother_first_fund
+            FROM ACC_INVESTMENT_FUND aif WHERE id = 2""")[0]
+    mother_second_fund = acc_investment_fund.objects.raw(
+        """SELECT id, round(SUM(CURRENT_NAV * 2116.3145),2) mother_second_fund
+            FROM ACC_INVESTMENT_FUND aif WHERE id = 7""")[0] 
+    total_fund.total_fund = total_fund.total_fund - mother_first_fund.mother_first_fund - mother_second_fund.mother_second_fund
+    return total_fund
+
 # Create your views here.
 @login_required(login_url='/login')
 def index(request):
@@ -238,17 +251,7 @@ def index(request):
     asset['stock_inv'] = total_price
     asset['stock_percentage'] = (asset['stock_inv']-float(avg_price))/float(avg_price)*100
 
-    asset['fund_inv'] = acc_investment_fund.objects.raw(
-        """SELECT id, round(
-            SUM(CURRENT_NAV*UNIT)-
-            (
-                (SELECT CURRENT_NAV * 8937.0663
-                    FROM ACC_INVESTMENT_FUND aif WHERE id = 2) +
-                (SELECT CURRENT_NAV * 2116.3145
-                    FROM ACC_INVESTMENT_FUND aif WHERE id = 7)
-            )    
-            ,2) total_fund FROM ACC_INVESTMENT_FUND aif""")[0]
-    
+    asset['fund_inv'] = get_fund_inv()
     html = get_gold_info()
     gold_gram_owned = 7
     gold_avg_price = 995142
