@@ -122,5 +122,13 @@
         });
         return false;
     });
+    $(document).ready(function () {
+        $('#table_price').DataTable({
+            "paging": false,
+            "info": false,
+            "searching": false,
+            "order": [[7, "desc"]]
+        });
+    });
 </script>
 {% endblock script %}

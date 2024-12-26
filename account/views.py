@@ -3,18 +3,18 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 from account.models import acc_income_expense, acc_investment_stock, acc_investment_fund, acc_investment_deposit, acc_ar_debt, acc_saving_goal_tracker
-from billing.models import bll_mst_bill_item, bll_trx_bill_item
+from billing.models import bll_mst_bill_item
 import urllib
-import requests
 import json
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import numpy_financial as npf
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 # Create your views here.
 @csrf_protect
@@ -308,7 +308,15 @@ def depoinvestment_view(request):
 def arliability_view(request):
     data_ar = acc_ar_debt.objects.filter(account_type='AR', account_status='UNPAID', valid_status='VALID')
     data_li = acc_ar_debt.objects.filter(account_type='LIABILITY', account_status='UNPAID', valid_status='VALID')
-    data_paid = acc_ar_debt.objects.filter(account_status='PAID', valid_status='VALID')
+    
+    today = timezone.now()
+    first_day_of_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
+    data_paid = acc_ar_debt.objects.filter(
+        account_status='PAID', 
+        valid_status='VALID',
+        account_date__gte=first_day_of_last_month,
+        account_date__lte=today
+        )
 
     context = {
         'title':'H - Account Receivable & Liability',
